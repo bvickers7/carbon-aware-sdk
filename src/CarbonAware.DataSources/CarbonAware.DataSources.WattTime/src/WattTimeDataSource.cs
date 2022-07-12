@@ -90,9 +90,34 @@ public class WattTimeDataSource : ICarbonIntensityDataSource
         }
     }
 
-    public Task<EmissionsForecast> GetCarbonIntensityForecastAsync(Location location, DateTimeOffset startTime, DateTimeOffset endTime)
+    public async Task<EmissionsForecast> GetCarbonIntensityForecastAsync(Location location, DateTimeOffset startTime, DateTimeOffset endTime)
     {
-        throw new NotImplementedException();
+        this.Logger.LogInformation($"Getting carbon intensity forecast for location {location} with startTime {startTime} and endTime {endTime}");
+
+        using (var activity = Activity.StartActivity())
+        {
+            BalancingAuthority balancingAuthority = await this.GetBalancingAuthority(location, activity);
+            var data = await this.WattTimeClient.GetForecastByDateAsync(balancingAuthority, startTime, endTime);
+            // TODO handle list of Forcast elements.
+            var oneData = data.First();
+            var duration = GetDurationFromGridEmissionDataPoints(oneData.ForecastData.FirstOrDefault(), oneData.ForecastData.Skip(1)?.FirstOrDefault());
+            
+            // Linq statement to convert WattTime forecast data into EmissionsData for the CarbonAware SDK.
+            var forecastData = oneData.ForecastData.Select(e => new EmissionsData() 
+            { 
+                Location = e.BalancingAuthorityAbbreviation, 
+                Rating = ConvertMoerToGramsPerKilowattHour(e.Value), 
+                Time = e.PointTime,
+                Duration = duration
+            });
+
+            return new EmissionsForecast()
+            {
+                GeneratedAt = oneData.GeneratedAt,
+                Location = location,
+                ForecastData = forecastData,
+            };
+        }
     }
 
     private async Task<IEnumerable<EmissionsData>> GetCarbonIntensityAsync(Location location, DateTimeOffset periodStartTime, DateTimeOffset periodEndTime)
