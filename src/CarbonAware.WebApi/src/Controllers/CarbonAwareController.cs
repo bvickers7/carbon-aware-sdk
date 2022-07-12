@@ -173,12 +173,12 @@ public class CarbonAwareController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ValidationProblemDetails))]
     [ProducesResponseType(StatusCodes.Status501NotImplemented, Type = typeof(ValidationProblemDetails))]
     [HttpPost("forecasts/batch")]
-    public IActionResult BatchForecastData(IEnumerable<EmissionsForecastBatchDTO> requestedForecasts)
+    public async Task<IActionResult> BatchForecastDataAsync(IEnumerable<EmissionsForecastBatchDTO> requestedForecasts)
     {
         // TODO finish this function
         using (var activity = Activity.StartActivity())
         {
-            var forecasts = Enumerable.Empty<EmissionsForecast>();
+            var forecasts = new List<EmissionsForecastDTO>();
             foreach (EmissionsForecastBaseDTO forecastBaseDTO in requestedForecasts)
             {
                 IEnumerable<Location> locationEnumerable = CreateLocationsFromQueryString(new string[] { forecastBaseDTO.Location });
@@ -189,12 +189,13 @@ public class CarbonAwareController : ControllerBase
                     { CarbonAwareConstants.Duration, forecastBaseDTO.WindowSize },
                 };
 
-                var forecastsForLocation = await _aggregator.GetBatchForecastDataAsync(props);
+                var forecastForLocation = await _aggregator.GetForecastDataAsync(props);
 
-                var results = forecasts.Select(f => EmissionsForecastDTO.FromEmissionsForecast(f));
+                var result =  EmissionsForecastDTO.FromEmissionsForecast(forecastForLocation);
+                forecasts.Add(result);
             }
             
-            return Ok(results);
+            return Ok(forecasts);
         }
     }
 

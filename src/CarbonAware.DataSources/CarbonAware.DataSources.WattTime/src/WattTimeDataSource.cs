@@ -90,7 +90,7 @@ public class WattTimeDataSource : ICarbonIntensityDataSource
         }
     }
 
-    public Task<EmissionsForecast> GetBatchCarbonIntensityForecastAsync(Location location, DateTimeOffset startTime, DateTimeOffset endTime)
+    public Task<EmissionsForecast> GetCarbonIntensityForecastAsync(Location location, DateTimeOffset startTime, DateTimeOffset endTime)
     {
         throw new NotImplementedException();
     }

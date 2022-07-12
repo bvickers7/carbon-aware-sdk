@@ -74,9 +74,25 @@ public class CarbonAwareAggregator : ICarbonAwareAggregator
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<EmissionsForecast>> GetBatchForecastDataAsync(IDictionary props)
+    public async Task<EmissionsForecast> GetForecastDataAsync(IDictionary props)
     {
-        throw new NotImplementedException();
+        using (var activity = Activity.StartActivity())
+        {
+            DateTimeOffset start = GetOffsetOrDefault(props, CarbonAwareConstants.Start, DateTimeOffset.MinValue);
+            DateTimeOffset end = GetOffsetOrDefault(props, CarbonAwareConstants.End, DateTimeOffset.MaxValue);
+            TimeSpan windowSize = GetDurationOrDefault(props);
+            Location location = GetLocationOrThrow(props).First(); // Should only be one location
+            _logger.LogInformation("Aggregator getting carbon intensity forecast from data source");
+            
+            var forecast = await this._dataSource.GetCarbonIntensityForecastAsync(location, start, end);
+            forecast.ForecastData = forecast.ForecastData.RollingAverage(windowSize);
+            forecast.OptimalDataPoint = GetOptimalEmissions(forecast.ForecastData);
+            if (forecast.ForecastData.Any())
+            {
+                forecast.WindowSize = forecast.ForecastData.First().Duration;
+            }
+            return forecast;
+        }
     }
 
     private EmissionsData? GetOptimalEmissions(IEnumerable<EmissionsData> emissionsData)
