@@ -84,7 +84,10 @@ public class CarbonAwareAggregator : ICarbonAwareAggregator
             Location location = GetLocationOrThrow(props).First(); // Should only be one location
             _logger.LogInformation("Aggregator getting carbon intensity forecast from data source");
             
-            var forecast = await this._dataSource.GetCarbonIntensityForecastAsync(location, start, end);
+            var forecasts = await this._dataSource.GetCarbonIntensityForecastAsync(location, start, end);
+            // TODO. "Massage data" based on the user input. Right now it is only returning the 1st element w/o
+            // any knowledge about generated time.
+            var forecast = forecasts.First();
             forecast.ForecastData = forecast.ForecastData.RollingAverage(windowSize);
             forecast.OptimalDataPoint = GetOptimalEmissions(forecast.ForecastData);
             if (forecast.ForecastData.Any())

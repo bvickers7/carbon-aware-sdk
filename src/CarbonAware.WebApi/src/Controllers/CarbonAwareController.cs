@@ -194,7 +194,7 @@ public class CarbonAwareController : ControllerBase
                 var result =  EmissionsForecastDTO.FromEmissionsForecast(forecastForLocation);
                 forecasts.Add(result);
             }
-            
+
             return Ok(forecasts);
         }
     }

@@ -90,7 +90,7 @@ public class WattTimeDataSource : ICarbonIntensityDataSource
         }
     }
 
-    public async Task<EmissionsForecast> GetCarbonIntensityForecastAsync(Location location, DateTimeOffset startTime, DateTimeOffset endTime)
+    public async Task<IEnumerable<EmissionsForecast>> GetCarbonIntensityForecastAsync(Location location, DateTimeOffset startTime, DateTimeOffset endTime)
     {
         this.Logger.LogInformation($"Getting carbon intensity forecast for location {location} with startTime {startTime} and endTime {endTime}");
 
@@ -98,25 +98,26 @@ public class WattTimeDataSource : ICarbonIntensityDataSource
         {
             BalancingAuthority balancingAuthority = await this.GetBalancingAuthority(location, activity);
             var data = await this.WattTimeClient.GetForecastByDateAsync(balancingAuthority, startTime, endTime);
-            // TODO handle list of Forcast elements.
-            var oneData = data.First();
-            var duration = GetDurationFromGridEmissionDataPoints(oneData.ForecastData.FirstOrDefault(), oneData.ForecastData.Skip(1)?.FirstOrDefault());
-            
-            // Linq statement to convert WattTime forecast data into EmissionsData for the CarbonAware SDK.
-            var forecastData = oneData.ForecastData.Select(e => new EmissionsData() 
-            { 
-                Location = e.BalancingAuthorityAbbreviation, 
-                Rating = ConvertMoerToGramsPerKilowattHour(e.Value), 
-                Time = e.PointTime,
-                Duration = duration
-            });
-
-            return new EmissionsForecast()
+            var l = new List<EmissionsForecast>();
+            foreach (var elem in data)
             {
-                GeneratedAt = oneData.GeneratedAt,
-                Location = location,
-                ForecastData = forecastData,
-            };
+                var duration = GetDurationFromGridEmissionDataPoints(elem.ForecastData.FirstOrDefault(), elem.ForecastData.Skip(1)?.FirstOrDefault());
+                var forecastData = elem.ForecastData.Select(e => new EmissionsData() 
+                { 
+                    Location = e.BalancingAuthorityAbbreviation, 
+                    Rating = ConvertMoerToGramsPerKilowattHour(e.Value), 
+                    Time = e.PointTime,
+                    Duration = duration
+                });
+                var emForecast = new EmissionsForecast()
+                {
+                    GeneratedAt = elem.GeneratedAt,
+                    Location = location,
+                    ForecastData = forecastData,
+                };
+                l.Add(emForecast);
+            }
+            return l;
         }
     }
 
