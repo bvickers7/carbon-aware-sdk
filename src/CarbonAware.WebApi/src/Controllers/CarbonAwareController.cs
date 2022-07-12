@@ -175,10 +175,27 @@ public class CarbonAwareController : ControllerBase
     [HttpPost("forecasts/batch")]
     public IActionResult BatchForecastData(IEnumerable<EmissionsForecastBatchDTO> requestedForecasts)
     {
-        // Dummy result.
-        // TODO: implement this controller method after spec is approved.
-        var result = new List<EmissionsForecastDTO>();
-        return Ok(result);
+        // TODO finish this function
+        using (var activity = Activity.StartActivity())
+        {
+            var forecasts = Enumerable.Empty<EmissionsForecast>();
+            foreach (EmissionsForecastBaseDTO forecastBaseDTO in requestedForecasts)
+            {
+                IEnumerable<Location> locationEnumerable = CreateLocationsFromQueryString(new string[] { forecastBaseDTO.Location });
+                var props = new Dictionary<string, object?>() {
+                    { CarbonAwareConstants.Locations, locationEnumerable },
+                    { CarbonAwareConstants.Start, forecastBaseDTO.StartTime },
+                    { CarbonAwareConstants.End, forecastBaseDTO.EndTime },
+                    { CarbonAwareConstants.Duration, forecastBaseDTO.WindowSize },
+                };
+
+                var forecastsForLocation = await _aggregator.GetBatchForecastDataAsync(props);
+
+                var results = forecasts.Select(f => EmissionsForecastDTO.FromEmissionsForecast(f));
+            }
+            
+            return Ok(results);
+        }
     }
 
 

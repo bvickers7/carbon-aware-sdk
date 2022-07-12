@@ -89,6 +89,12 @@ public class WattTimeDataSource : ICarbonIntensityDataSource
             };
         }
     }
+
+    public Task<EmissionsForecast> GetBatchCarbonIntensityForecastAsync(Location location, DateTimeOffset startTime, DateTimeOffset endTime)
+    {
+        throw new NotImplementedException();
+    }
+
     private async Task<IEnumerable<EmissionsData>> GetCarbonIntensityAsync(Location location, DateTimeOffset periodStartTime, DateTimeOffset periodEndTime)
     {
         Logger.LogInformation($"Getting carbon intensity for location {location} for period {periodStartTime} to {periodEndTime}.");
