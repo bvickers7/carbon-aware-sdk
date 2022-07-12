@@ -190,11 +190,12 @@ public class CarbonAwareController : ControllerBase
                 };
 
                 var forecastForLocation = await _aggregator.GetForecastDataAsync(props);
-
-                var result =  EmissionsForecastDTO.FromEmissionsForecast(forecastForLocation);
-                forecasts.Add(result);
+                foreach (var forecast in forecastForLocation)
+                {
+                    var result =  EmissionsForecastDTO.FromEmissionsForecast(forecast);
+                    forecasts.Add(result);
+                }
             }
-
             return Ok(forecasts);
         }
     }

@@ -34,5 +34,5 @@ public interface ICarbonAwareAggregator : IAggregator
     /// <param name="props">IDictionary with properties required by concrete classes.</param>
     /// <see cref="CarbonAwareConstants"/>
     /// <returns>Single emissions forecasts for a given location based on the given start and end periods.</returns>
-    Task<EmissionsForecast> GetForecastDataAsync(IDictionary props);
+    Task<IEnumerable<EmissionsForecast>> GetForecastDataAsync(IDictionary props);
 }

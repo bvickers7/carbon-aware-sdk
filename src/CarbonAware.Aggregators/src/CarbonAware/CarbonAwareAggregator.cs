@@ -74,7 +74,7 @@ public class CarbonAwareAggregator : ICarbonAwareAggregator
     }
 
     /// <inheritdoc />
-    public async Task<EmissionsForecast> GetForecastDataAsync(IDictionary props)
+    public async Task<IEnumerable<EmissionsForecast>> GetForecastDataAsync(IDictionary props)
     {
         using (var activity = Activity.StartActivity())
         {
@@ -87,14 +87,18 @@ public class CarbonAwareAggregator : ICarbonAwareAggregator
             var forecasts = await this._dataSource.GetCarbonIntensityForecastAsync(location, start, end);
             // TODO. "Massage data" based on the user input. Right now it is only returning the 1st element w/o
             // any knowledge about generated time.
-            var forecast = forecasts.First();
-            forecast.ForecastData = forecast.ForecastData.RollingAverage(windowSize);
-            forecast.OptimalDataPoint = GetOptimalEmissions(forecast.ForecastData);
-            if (forecast.ForecastData.Any())
+            var list = new List<EmissionsForecast>();
+            foreach (var forecast in forecasts)
             {
-                forecast.WindowSize = forecast.ForecastData.First().Duration;
+                forecast.ForecastData = forecast.ForecastData.RollingAverage(windowSize);
+                forecast.OptimalDataPoint = GetOptimalEmissions(forecast.ForecastData);
+                if (forecast.ForecastData.Any())
+                {
+                    forecast.WindowSize = forecast.ForecastData.First().Duration;
+                }
+                list.Add(forecast);
             }
-            return forecast;
+            return list;
         }
     }
 
