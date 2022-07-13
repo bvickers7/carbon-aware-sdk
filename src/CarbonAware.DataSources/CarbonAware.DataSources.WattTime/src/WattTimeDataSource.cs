@@ -97,25 +97,32 @@ public class WattTimeDataSource : ICarbonIntensityDataSource
         using (var activity = Activity.StartActivity())
         {
             BalancingAuthority balancingAuthority = await this.GetBalancingAuthority(location, activity);
-            var data = await this.WattTimeClient.GetForecastByDateAsync(balancingAuthority, startTime, endTime);
+
+            // Split start/end interval into multiple 24hr (max) intervals because can't request more than 24 hrs at a time.
+            IEnumerable<Tuple<DateTimeOffset, DateTimeOffset>> intervals = SplitIntervalInto24Chunk(startTime, endTime);
             var list = new List<EmissionsForecast>();
-            foreach (var elem in data)
+
+            foreach ((DateTimeOffset start, DateTimeOffset end) in intervals)
             {
-                var duration = GetDurationFromGridEmissionDataPoints(elem.ForecastData.FirstOrDefault(), elem.ForecastData.Skip(1)?.FirstOrDefault());
-                var forecastData = elem.ForecastData.Select(e => new EmissionsData() 
-                { 
-                    Location = e.BalancingAuthorityAbbreviation, 
-                    Rating = ConvertMoerToGramsPerKilowattHour(e.Value), 
-                    Time = e.PointTime,
-                    Duration = duration
-                });
-                var emForecast = new EmissionsForecast()
+                var data = await this.WattTimeClient.GetForecastByDateAsync(balancingAuthority, start, end);
+                foreach (var elem in data)
                 {
-                    GeneratedAt = elem.GeneratedAt,
-                    Location = location,
-                    ForecastData = forecastData
-                };
-                list.Add(emForecast);
+                    var duration = GetDurationFromGridEmissionDataPoints(elem.ForecastData.FirstOrDefault(), elem.ForecastData.Skip(1)?.FirstOrDefault());
+                    var forecastData = elem.ForecastData.Select(e => new EmissionsData()
+                    {
+                        Location = e.BalancingAuthorityAbbreviation,
+                        Rating = ConvertMoerToGramsPerKilowattHour(e.Value),
+                        Time = e.PointTime,
+                        Duration = duration
+                    });
+                    var emForecast = new EmissionsForecast()
+                    {
+                        GeneratedAt = elem.GeneratedAt,
+                        Location = location,
+                        ForecastData = forecastData
+                    };
+                    list.Add(emForecast);
+                }
             }
             return list;
         }
@@ -196,5 +203,34 @@ public class WattTimeDataSource : ICarbonIntensityDataSource
         Logger.LogDebug("Converted location {location} to balancing authority {balancingAuthorityAbbreviation}", location, balancingAuthority.Abbreviation);
 
         return balancingAuthority;
+    }
+
+    private IEnumerable<Tuple<DateTimeOffset, DateTimeOffset>> SplitIntervalInto24Chunk(DateTimeOffset start, DateTimeOffset end)
+    {
+        // Find total days (in terms of 24 hrs).
+        // Round up such that (6/1 12pm) - (6/2 4pm) will be 2 days: (6/1 12pm - 6/2 12pm) and (6/2 12pm - 6/2 4pm)
+        int daysBetween = (int)Math.Ceiling((end - start).TotalDays);
+        List<Tuple<DateTimeOffset, DateTimeOffset>> days = new();
+        DateTimeOffset currentStart = start;
+
+        while (daysBetween >= 0)
+        {
+            DateTimeOffset newEnd = currentStart.AddDays(1);
+
+            // When final interval is less than 24hrs, use the actual end
+            if (newEnd > end)
+            {
+                days.Add(Tuple.Create(currentStart, end));
+                break;
+            }
+            else
+            {
+                days.Add(Tuple.Create(currentStart, newEnd));
+            }
+
+            currentStart = newEnd;
+            daysBetween--;
+        }
+        return days;
     }
 }
