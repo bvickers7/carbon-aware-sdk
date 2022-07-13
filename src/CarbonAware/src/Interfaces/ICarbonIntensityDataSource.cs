@@ -30,4 +30,13 @@ public interface ICarbonIntensityDataSource
     /// <param name="location">The location that should be used for getting the forecast.</param>
     /// <returns>A forecasted emissions object for the given location.</returns>
     public Task<EmissionsForecast> GetCurrentCarbonIntensityForecastAsync(Location location);
+
+    /// <summary>
+    /// Gets the batched forecasted carbon intensity for a location for the given period start and end time
+    /// </summary>
+    /// <param name="location">The location that should be used for getting the forecast.</param>
+    /// <param name="periodStartTime">The start time of the period.</param>
+    /// <param name="periodEndTime">The end time of the period.</param>
+    /// <returns>A forecasted emissions object for the given location during the given period.</returns>
+    public Task<IEnumerable<EmissionsForecast>> GetCarbonIntensityForecastAsync(Location location, DateTimeOffset periodStartTime, DateTimeOffset periodEndTime);
 }

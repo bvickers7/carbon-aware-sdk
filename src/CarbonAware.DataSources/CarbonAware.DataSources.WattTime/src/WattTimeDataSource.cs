@@ -89,6 +89,38 @@ public class WattTimeDataSource : ICarbonIntensityDataSource
             };
         }
     }
+
+    public async Task<IEnumerable<EmissionsForecast>> GetCarbonIntensityForecastAsync(Location location, DateTimeOffset startTime, DateTimeOffset endTime)
+    {
+        this.Logger.LogInformation($"Getting carbon intensity forecast for location {location} with startTime {startTime} and endTime {endTime}");
+
+        using (var activity = Activity.StartActivity())
+        {
+            BalancingAuthority balancingAuthority = await this.GetBalancingAuthority(location, activity);
+            var data = await this.WattTimeClient.GetForecastByDateAsync(balancingAuthority, startTime, endTime);
+            var list = new List<EmissionsForecast>();
+            foreach (var elem in data)
+            {
+                var duration = GetDurationFromGridEmissionDataPoints(elem.ForecastData.FirstOrDefault(), elem.ForecastData.Skip(1)?.FirstOrDefault());
+                var forecastData = elem.ForecastData.Select(e => new EmissionsData() 
+                { 
+                    Location = e.BalancingAuthorityAbbreviation, 
+                    Rating = ConvertMoerToGramsPerKilowattHour(e.Value), 
+                    Time = e.PointTime,
+                    Duration = duration
+                });
+                var emForecast = new EmissionsForecast()
+                {
+                    GeneratedAt = elem.GeneratedAt,
+                    Location = location,
+                    ForecastData = forecastData
+                };
+                list.Add(emForecast);
+            }
+            return list;
+        }
+    }
+
     private async Task<IEnumerable<EmissionsData>> GetCarbonIntensityAsync(Location location, DateTimeOffset periodStartTime, DateTimeOffset periodEndTime)
     {
         Logger.LogInformation($"Getting carbon intensity for location {location} for period {periodStartTime} to {periodEndTime}.");
