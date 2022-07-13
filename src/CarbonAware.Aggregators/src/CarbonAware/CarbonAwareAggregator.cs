@@ -80,15 +80,19 @@ public class CarbonAwareAggregator : ICarbonAwareAggregator
         {
             var start = GetOffsetOrDefault(props, CarbonAwareConstants.Start, DateTimeOffset.MinValue);
             var end = GetOffsetOrDefault(props, CarbonAwareConstants.End, DateTimeOffset.MaxValue);
+            if (end < start)
+            {
+                throw new ArgumentException($"endTime {end} less than startTime {start}");
+            }
             var windowSize = GetDurationOrDefault(props);
             var location = GetLocationOrThrow(props).First(); // Should only be one location
             var requestedAt = GetOffsetOrDefault(props, CarbonAwareConstants.RequestedAt, default);
-            _logger.LogInformation("Aggregator getting carbon intensity forecast from data source");
-            var list = new List<EmissionsForecast>();
             if (requestedAt < start || requestedAt > end)
             {
-                return list;
+                throw new ArgumentException($"requestedAt {requestedAt} out of bounds [startTime {start} , endTime {end}]");
             }
+            var list = new List<EmissionsForecast>();
+            _logger.LogInformation("Aggregator getting carbon intensity forecast from data source");
             var forecasts = await this._dataSource.GetCarbonIntensityForecastAsync(location, start, end);            
             foreach (var forecast in forecasts)
             {
