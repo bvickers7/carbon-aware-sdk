@@ -164,11 +164,13 @@ public class CarbonAwareController : ControllerBase
     /// <param name="requestedForecasts"> Array of requested forecasts.</param>
     /// <returns>An array of forecasts with their optimal marginal carbon intensity window.</returns>
     /// <response code="200">Returns the requested forecast objects</response>
+    /// <response code="204">No Content</response>
     /// <response code="400">Returned if any of the requested items are invalid</response>
     /// <response code="500">Internal server error</response>
     /// <response code="501">Returned if the underlying data source does not support forecasting</response>
     [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<EmissionsForecastDTO>))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
     [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ValidationProblemDetails))]
     [ProducesResponseType(StatusCodes.Status501NotImplemented, Type = typeof(ValidationProblemDetails))]
@@ -179,24 +181,25 @@ public class CarbonAwareController : ControllerBase
         using (var activity = Activity.StartActivity())
         {
             var forecasts = new List<EmissionsForecastDTO>();
-            foreach (EmissionsForecastBaseDTO forecastBaseDTO in requestedForecasts)
+            foreach (var forecastBatchDTO in requestedForecasts)
             {
-                IEnumerable<Location> locationEnumerable = CreateLocationsFromQueryString(new string[] { forecastBaseDTO.Location });
+                IEnumerable<Location> locationEnumerable = CreateLocationsFromQueryString(new string[] { forecastBatchDTO.Location });
                 var props = new Dictionary<string, object?>() {
                     { CarbonAwareConstants.Locations, locationEnumerable },
-                    { CarbonAwareConstants.Start, forecastBaseDTO.StartTime },
-                    { CarbonAwareConstants.End, forecastBaseDTO.EndTime },
-                    { CarbonAwareConstants.Duration, forecastBaseDTO.WindowSize },
+                    { CarbonAwareConstants.Start, forecastBatchDTO.StartTime },
+                    { CarbonAwareConstants.End, forecastBatchDTO.EndTime },
+                    { CarbonAwareConstants.Duration, forecastBatchDTO.WindowSize },
+                    { CarbonAwareConstants.RequestedAt, forecastBatchDTO.RequestedAt },
                 };
 
-                var forecastForLocation = await _aggregator.GetForecastDataAsync(props);
-                foreach (var forecast in forecastForLocation)
+                var forecastsForLocation = await _aggregator.GetForecastDataAsync(props);
+                foreach (var forecast in forecastsForLocation)
                 {
                     var result =  EmissionsForecastDTO.FromEmissionsForecast(forecast);
                     forecasts.Add(result);
                 }
             }
-            return Ok(forecasts);
+            return forecasts.Count > 0 ? Ok(forecasts) : NoContent();
         }
     }
 

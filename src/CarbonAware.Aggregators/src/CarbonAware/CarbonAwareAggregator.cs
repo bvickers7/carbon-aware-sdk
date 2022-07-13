@@ -78,18 +78,33 @@ public class CarbonAwareAggregator : ICarbonAwareAggregator
     {
         using (var activity = Activity.StartActivity())
         {
-            DateTimeOffset start = GetOffsetOrDefault(props, CarbonAwareConstants.Start, DateTimeOffset.MinValue);
-            DateTimeOffset end = GetOffsetOrDefault(props, CarbonAwareConstants.End, DateTimeOffset.MaxValue);
-            TimeSpan windowSize = GetDurationOrDefault(props);
-            Location location = GetLocationOrThrow(props).First(); // Should only be one location
+            var start = GetOffsetOrDefault(props, CarbonAwareConstants.Start, DateTimeOffset.MinValue);
+            var end = GetOffsetOrDefault(props, CarbonAwareConstants.End, DateTimeOffset.MaxValue);
+            var windowSize = GetDurationOrDefault(props);
+            var location = GetLocationOrThrow(props).First(); // Should only be one location
+            var requestedAt = GetOffsetOrDefault(props, CarbonAwareConstants.RequestedAt, default);
             _logger.LogInformation("Aggregator getting carbon intensity forecast from data source");
-            
-            var forecasts = await this._dataSource.GetCarbonIntensityForecastAsync(location, start, end);
-            // TODO. "Massage data" based on the user input. Right now it is only returning the 1st element w/o
-            // any knowledge about generated time.
             var list = new List<EmissionsForecast>();
+            if (requestedAt < start || requestedAt > end)
+            {
+                return list;
+            }
+            var forecasts = await this._dataSource.GetCarbonIntensityForecastAsync(location, start, end);            
             foreach (var forecast in forecasts)
             {
+                if (forecast.GeneratedAt < requestedAt)
+                {
+                    continue;
+                }
+                var firstDataPoint = forecast.ForecastData.First();
+                var lastDataPoint = forecast.ForecastData.Last();
+                forecast.StartTime = GetOffsetOrDefault(props, CarbonAwareConstants.Start, firstDataPoint.Time);
+                forecast.EndTime = GetOffsetOrDefault(props, CarbonAwareConstants.End, lastDataPoint.Time + lastDataPoint.Duration);
+                forecast.ForecastData = IntervalHelper.FilterByDuration(forecast.ForecastData, forecast.StartTime, forecast.EndTime);
+                if (!forecast.ForecastData.Any())
+                {
+                    continue;
+                }
                 forecast.ForecastData = forecast.ForecastData.RollingAverage(windowSize);
                 forecast.OptimalDataPoint = GetOptimalEmissions(forecast.ForecastData);
                 if (forecast.ForecastData.Any())
@@ -108,7 +123,7 @@ public class CarbonAwareAggregator : ICarbonAwareAggregator
         {
             return null;
         }
-        return emissionsData.Aggregate((minData, nextData) => minData.Rating < nextData.Rating ? minData : nextData);
+        return emissionsData.MinBy(x => x.Rating);
     }
 
     /// <summary>

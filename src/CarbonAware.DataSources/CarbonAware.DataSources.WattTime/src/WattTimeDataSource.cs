@@ -98,7 +98,7 @@ public class WattTimeDataSource : ICarbonIntensityDataSource
         {
             BalancingAuthority balancingAuthority = await this.GetBalancingAuthority(location, activity);
             var data = await this.WattTimeClient.GetForecastByDateAsync(balancingAuthority, startTime, endTime);
-            var l = new List<EmissionsForecast>();
+            var list = new List<EmissionsForecast>();
             foreach (var elem in data)
             {
                 var duration = GetDurationFromGridEmissionDataPoints(elem.ForecastData.FirstOrDefault(), elem.ForecastData.Skip(1)?.FirstOrDefault());
@@ -113,11 +113,11 @@ public class WattTimeDataSource : ICarbonIntensityDataSource
                 {
                     GeneratedAt = elem.GeneratedAt,
                     Location = location,
-                    ForecastData = forecastData,
+                    ForecastData = forecastData
                 };
-                l.Add(emForecast);
+                list.Add(emForecast);
             }
-            return l;
+            return list;
         }
     }
 
