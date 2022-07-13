@@ -115,13 +115,36 @@ public class CarbonAwareController : ControllerBase
     }
 
     /// <summary>
-    /// Maps user input query parameters to props dictionary for use with the data sources current forecast method.
+    ///   Retrieves the most recent forecasted data and calculates the optimal marginal carbon intensity window.
     /// </summary>
     /// <param name="locations"> String array of named locations.</param>
-    /// <param name="startTime"> Start time of forecast period.</param>
-    /// <param name="endTime"> End time of forecast period.</param>
-    /// <param name="windowSize"> Size of rolling average window in minutes.</param>
-    /// <returns>HTTP response containing the results of the data source current forecast call</returns>
+    /// <param name="startTime">
+    ///   Start time boundary of forecasted data points. Ignores current forecast data points before this time.
+    ///   Defaults to the earliest time in the forecast data.
+    /// </param>
+    /// <param name="endTime">
+    ///   End time boundary of forecasted data points. Ignores current forecast data points after this time.
+    ///   Defaults to the latest time in the forecast data.
+    /// </param>
+    /// <param name="windowSize">
+    ///   The estimated duration (in minutes) of the workload.
+    ///   Defaults to the duration of a single forecast data point.
+    /// </param>
+    /// <remarks>
+    ///   This endpoint fetches the most recent forecast for all provided locations and calculates the optimal 
+    ///   marginal carbon intensity windows (per the specified windowSize) for each, within the start and end time boundaries.
+    ///   If no start or end time boundaries are provided, all forecasted data points are used. 
+    ///
+    ///   The forecast data represents what the data source predicts future marginal carbon intesity values to be, 
+    ///   not actual measured emissions data (as future values cannot be known).
+    ///
+    ///   This endpoint is useful for determining if there is a more carbon-optimal time to use electicity predicted in the future.
+    /// </remarks>
+    /// <returns>An array of forecasts (one per requested location) with their optimal marginal carbon intensity windows.</returns>
+    /// <response code="200">Returns the requested forecast objects</response>
+    /// <response code="400">Returned if any of the input parameters are invalid</response>
+    /// <response code="500">Internal server error</response>
+    /// <response code="501">Returned if the underlying data source does not support forecasting</response>
     [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<EmissionsForecastDTO>))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
@@ -164,17 +187,24 @@ public class CarbonAwareController : ControllerBase
     /// <param name="requestedForecasts"> Array of requested forecasts.</param>
     /// <returns>An array of forecasts with their optimal marginal carbon intensity window.</returns>
     /// <response code="200">Returns the requested forecast objects</response>
+<<<<<<< HEAD
     /// <response code="204">No Content</response>
+=======
+>>>>>>> dev
     /// <response code="400">Returned if any of the requested items are invalid</response>
     /// <response code="500">Internal server error</response>
     /// <response code="501">Returned if the underlying data source does not support forecasting</response>
     [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<EmissionsForecastDTO>))]
+<<<<<<< HEAD
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+=======
+>>>>>>> dev
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
     [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ValidationProblemDetails))]
     [ProducesResponseType(StatusCodes.Status501NotImplemented, Type = typeof(ValidationProblemDetails))]
     [HttpPost("forecasts/batch")]
+<<<<<<< HEAD
     public async Task<IActionResult> BatchForecastDataAsync(IEnumerable<EmissionsForecastBatchDTO> requestedForecasts)
     {
         // TODO finish this function
@@ -201,6 +231,14 @@ public class CarbonAwareController : ControllerBase
             }
             return forecasts.Count > 0 ? Ok(forecasts) : NoContent();
         }
+=======
+    public IActionResult BatchForecastData(IEnumerable<EmissionsForecastBatchDTO> requestedForecasts)
+    {
+        // Dummy result.
+        // TODO: implement this controller method after spec is approved.
+        var result = new List<EmissionsForecastDTO>();
+        return Ok(result);
+>>>>>>> dev
     }
 
 
