@@ -187,23 +187,19 @@ public class CarbonAwareController : ControllerBase
     /// <param name="requestedForecasts"> Array of requested forecasts.</param>
     /// <returns>An array of forecasts with their optimal marginal carbon intensity window.</returns>
     /// <response code="200">Returns the requested forecast objects</response>
-    /// <response code="204">No Content</response>
     /// <response code="400">Returned if any of the requested items are invalid</response>
     /// <response code="500">Internal server error</response>
     /// <response code="501">Returned if the underlying data source does not support forecasting</response>
     [Produces("application/json")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<EmissionsForecastDTO>))]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
     [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ValidationProblemDetails))]
     [ProducesResponseType(StatusCodes.Status501NotImplemented, Type = typeof(ValidationProblemDetails))]
     [HttpPost("forecasts/batch")]
-    public async Task<IActionResult> BatchForecastDataAsync(IEnumerable<EmissionsForecastBatchDTO> requestedForecasts)
+    public async IAsyncEnumerable<EmissionsForecastDTO> BatchForecastDataAsync(IEnumerable<EmissionsForecastBatchDTO> requestedForecasts)
     {
-        // TODO finish this function
         using (var activity = Activity.StartActivity())
         {
-            var forecasts = new List<EmissionsForecastDTO>();
             foreach (var forecastBatchDTO in requestedForecasts)
             {
                 IEnumerable<Location> locationEnumerable = CreateLocationsFromQueryString(new string[] { forecastBatchDTO.Location });
@@ -215,14 +211,11 @@ public class CarbonAwareController : ControllerBase
                     { CarbonAwareConstants.RequestedAt, forecastBatchDTO.RequestedAt },
                 };
 
-                var forecastsForLocation = await _aggregator.GetForecastDataAsync(props);
-                foreach (var forecast in forecastsForLocation)
+                await foreach (var forecast in _aggregator.GetForecastDataAsync(props))
                 {
-                    var result =  EmissionsForecastDTO.FromEmissionsForecast(forecast);
-                    forecasts.Add(result);
+                    yield return EmissionsForecastDTO.FromEmissionsForecast(forecast);
                 }
             }
-            return forecasts.Count > 0 ? Ok(forecasts) : NoContent();
         }
     }
 

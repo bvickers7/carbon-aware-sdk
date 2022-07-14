@@ -90,7 +90,7 @@ public class WattTimeDataSource : ICarbonIntensityDataSource
         }
     }
 
-    public async Task<IEnumerable<EmissionsForecast>> GetCarbonIntensityForecastAsync(Location location, DateTimeOffset startTime, DateTimeOffset endTime)
+    public async IAsyncEnumerable<EmissionsForecast> GetCarbonIntensityForecastAsync(Location location, DateTimeOffset startTime, DateTimeOffset endTime)
     {
         this.Logger.LogInformation($"Getting carbon intensity forecast for location {location} with startTime {startTime} and endTime {endTime}");
 
@@ -99,10 +99,8 @@ public class WattTimeDataSource : ICarbonIntensityDataSource
             BalancingAuthority balancingAuthority = await this.GetBalancingAuthority(location, activity);
 
             // Split start/end interval into multiple 24hr (max) intervals because can't request more than 24 hrs at a time.
-            IEnumerable<Tuple<DateTimeOffset, DateTimeOffset>> intervals = SplitIntervalInto24Chunk(startTime, endTime);
-            var list = new List<EmissionsForecast>();
-
-            foreach ((DateTimeOffset start, DateTimeOffset end) in intervals)
+            var intervals = SplitIntervalInto24Chunk(startTime, endTime);
+            foreach ((var start, var end) in intervals)
             {
                 var data = await this.WattTimeClient.GetForecastByDateAsync(balancingAuthority, start, end);
                 foreach (var elem in data)
@@ -121,10 +119,9 @@ public class WattTimeDataSource : ICarbonIntensityDataSource
                         Location = location,
                         ForecastData = forecastData
                     };
-                    list.Add(emForecast);
+                    yield return emForecast;
                 }
             }
-            return list;
         }
     }
 

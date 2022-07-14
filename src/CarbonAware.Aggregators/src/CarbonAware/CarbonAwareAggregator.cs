@@ -75,7 +75,7 @@ public class CarbonAwareAggregator : ICarbonAwareAggregator
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<EmissionsForecast>> GetForecastDataAsync(IDictionary props)
+    public async IAsyncEnumerable<EmissionsForecast> GetForecastDataAsync(IDictionary props)
     {
         using (var activity = Activity.StartActivity())
         {
@@ -92,10 +92,9 @@ public class CarbonAwareAggregator : ICarbonAwareAggregator
             {
                 throw new ArgumentException($"requestedAt {requestedAt} out of bounds [startTime {start} , endTime {end}]");
             }
-            var list = new List<EmissionsForecast>();
             _logger.LogInformation("Aggregator getting carbon intensity forecast from data source");
-            var forecasts = await this._dataSource.GetCarbonIntensityForecastAsync(location, start, end);            
-            foreach (var forecast in forecasts)
+            // var forecasts = await this._dataSource.GetCarbonIntensityForecastAsync(location, start, end);
+            await foreach (var forecast in this._dataSource.GetCarbonIntensityForecastAsync(location, start, end))
             {
                 if (forecast.GeneratedAt < requestedAt)
                 {
@@ -116,9 +115,8 @@ public class CarbonAwareAggregator : ICarbonAwareAggregator
                 {
                     forecast.WindowSize = forecast.ForecastData.First().Duration;
                 }
-                list.Add(forecast);
+                yield return forecast;
             }
-            return list;
         }
     }
 
