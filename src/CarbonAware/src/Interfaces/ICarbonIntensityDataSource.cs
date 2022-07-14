@@ -38,5 +38,5 @@ public interface ICarbonIntensityDataSource
     /// <param name="periodStartTime">The start time of the period.</param>
     /// <param name="periodEndTime">The end time of the period.</param>
     /// <returns>A forecasted emissions object for the given location during the given period.</returns>
-    public Task<IEnumerable<EmissionsForecast>> GetCarbonIntensityForecastAsync(Location location, DateTimeOffset periodStartTime, DateTimeOffset periodEndTime);
+    public IAsyncEnumerable<EmissionsForecast> GetCarbonIntensityForecastAsync(Location location, DateTimeOffset periodStartTime, DateTimeOffset periodEndTime);
 }
