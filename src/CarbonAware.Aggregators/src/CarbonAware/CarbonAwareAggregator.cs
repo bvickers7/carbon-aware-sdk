@@ -81,25 +81,26 @@ public class CarbonAwareAggregator : ICarbonAwareAggregator
         {
             var start = GetOffsetOrDefault(props, CarbonAwareConstants.Start, DateTimeOffset.MinValue);
             var end = GetOffsetOrDefault(props, CarbonAwareConstants.End, DateTimeOffset.MaxValue);
-            if (end < start)
-            {
-                throw new ArgumentException($"endTime {end} less than startTime {start}");
-            }
+            // if (end < start)
+            // {
+            //     throw new ArgumentException($"endTime {end} less than startTime {start}");
+            // }
             var windowSize = GetDurationOrDefault(props);
             var location = GetLocationOrThrow(props).First(); // Should only be one location
             var requestedAt = GetOffsetOrDefault(props, CarbonAwareConstants.RequestedAt, default);
-            if (requestedAt > start)
-            {
-                throw new ArgumentException($"requestedAt {requestedAt} is after startTime {start}.");
-            }
+            // if (requestedAt > start)
+            // {
+            //     throw new ArgumentException($"requestedAt {requestedAt} is after startTime {start}.");
+            // }
             _logger.LogInformation("Aggregator getting carbon intensity forecast from data source");
             // var forecasts = await this._dataSource.GetCarbonIntensityForecastAsync(location, start, end);
-            await foreach (var forecast in this._dataSource.GetCarbonIntensityForecastAsync(location, requestedAt, end))
+            // await foreach (var forecast in this._dataSource.GetCarbonIntensityForecastAsync(location, requestedAt, end))
+            await foreach (var forecast in this._dataSource.GetCarbonIntensityForecastAsync(location, requestedAt, requestedAt))
             {
-                if (forecast.GeneratedAt < requestedAt)
-                {
-                    continue;
-                }
+                // if (forecast.GeneratedAt < requestedAt)
+                // {
+                //     continue;
+                // }
                 var firstDataPoint = forecast.ForecastData.First();
                 var lastDataPoint = forecast.ForecastData.Last();
                 forecast.StartTime = GetOffsetOrDefault(props, CarbonAwareConstants.Start, firstDataPoint.Time);
