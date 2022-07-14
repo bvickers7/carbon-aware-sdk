@@ -81,25 +81,16 @@ public class CarbonAwareAggregator : ICarbonAwareAggregator
         {
             var start = GetOffsetOrDefault(props, CarbonAwareConstants.Start, DateTimeOffset.MinValue);
             var end = GetOffsetOrDefault(props, CarbonAwareConstants.End, DateTimeOffset.MaxValue);
-            if (end < start)
-            {
-                throw new ArgumentException($"endTime {end} less than startTime {start}");
-            }
             var windowSize = GetDurationOrDefault(props);
             var location = GetLocationOrThrow(props).First(); // Should only be one location
             var requestedAt = GetOffsetOrDefault(props, CarbonAwareConstants.RequestedAt, default);
-            if (requestedAt < start || requestedAt > end)
-            {
-                throw new ArgumentException($"requestedAt {requestedAt} out of bounds [startTime {start} , endTime {end}]");
-            }
+
             _logger.LogInformation("Aggregator getting carbon intensity forecast from data source");
-            // var forecasts = await this._dataSource.GetCarbonIntensityForecastAsync(location, start, end);
-            await foreach (var forecast in this._dataSource.GetCarbonIntensityForecastAsync(location, start, end))
+            // Consuming data source start/end parameters with the value of requestedAt to get only the forecast at one specific moment.
+            // NOTE: Signature of these methods should be re-evaluate since only one EmissionsForecast is returned, or create new ones
+            // that are more explicit with the intent.
+            await foreach (var forecast in this._dataSource.GetCarbonIntensityForecastAsync(location, requestedAt, requestedAt))
             {
-                if (forecast.GeneratedAt < requestedAt)
-                {
-                    continue;
-                }
                 var firstDataPoint = forecast.ForecastData.First();
                 var lastDataPoint = forecast.ForecastData.Last();
                 forecast.StartTime = GetOffsetOrDefault(props, CarbonAwareConstants.Start, firstDataPoint.Time);
