@@ -75,7 +75,7 @@ public class CarbonAwareAggregator : ICarbonAwareAggregator
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<EmissionsForecast> GetForecastDataAsync(IDictionary props)
+    public async Task<EmissionsForecast?> GetForecastDataAsync(IDictionary props)
     {
         using (var activity = Activity.StartActivity())
         {
@@ -89,6 +89,7 @@ public class CarbonAwareAggregator : ICarbonAwareAggregator
             // Consuming data source start/end parameters with the value of requestedAt to get only the forecast at one specific moment.
             // NOTE: Signature of these methods should be re-evaluate since only one EmissionsForecast is returned, or create new ones
             // that are more explicit with the intent.
+            var list = new List<EmissionsForecast>();
             await foreach (var forecast in this._dataSource.GetCarbonIntensityForecastAsync(location, requestedAt, requestedAt))
             {
                 var firstDataPoint = forecast.ForecastData.First();
@@ -106,8 +107,10 @@ public class CarbonAwareAggregator : ICarbonAwareAggregator
                 {
                     forecast.WindowSize = forecast.ForecastData.First().Duration;
                 }
-                yield return forecast;
+                list.Add(forecast);
+                break;
             }
+            return list.FirstOrDefault();
         }
     }
 
