@@ -111,6 +111,27 @@
     curl -v http://52.226.221.208/emissions/bylocation?location=eastus
     ```
 
+## Using NGINX as LoadBalancer + Service ClusterIP
+
+- Install nginx ingress (see ./install-ingress.sh)
+- Use `ca-with-ingresslbl` as the example Helm chart to configure the service
+  and the ingress controller.
+    ```sh
+    helm install -f env-values.yaml ca-with-ingress . --namespace ingress-basic
+    ```
+
+- Check LoadBalancer's External IP address, then modify the client:
+    ```sh
+    curl -v -s http://<LoadBalanceIP:PORT>/v1/sci-scores/marginal-carbon-intensity...."
+    ```
+
+Most of the configuration is at `values.yaml` file.
+
+File `ca-with-ingress-ingress.yaml` is a ingress definition that can be deployed manually using `kubectl` instead of changing `values.yaml` default section of `ingress`
+To use this file directly deploy using kubectl
+```sh
+kubectl apply -f ca-with-ingress-ingress.yaml --namespace ingress-basic
+```
 
 ## References
 [Helm local Instructions](../samples/helmexample/README.md)
@@ -119,3 +140,4 @@
 
 [Helm env vars](https://jhooq.com/helm-pass-environment-variables/)
 
+[Nginx - Azure](https://docs.microsoft.com/en-us/azure/aks/ingress-basic?tabs=azure-cli)
