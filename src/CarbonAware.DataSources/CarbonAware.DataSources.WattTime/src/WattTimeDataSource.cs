@@ -4,6 +4,7 @@ using CarbonAware.Model;
 using CarbonAware.Tools.WattTimeClient;
 using CarbonAware.Tools.WattTimeClient.Model;
 using Microsoft.Extensions.Logging;
+using StackExchange.Profiling;
 using System.Diagnostics;
 
 namespace CarbonAware.DataSources.WattTime;
@@ -52,10 +53,13 @@ public class WattTimeDataSource : ICarbonIntensityDataSource
     {
         this.Logger.LogInformation("Getting carbon intensity for locations {locations} for period {periodStartTime} to {periodEndTime}.", locations, periodStartTime, periodEndTime);
         List<EmissionsData> result = new ();
-        foreach (var location in locations)
+        using (MiniProfiler.Current.Step("Get Carbon Intensity Async in DataSource"))
         {
-            IEnumerable<EmissionsData> interimResult = await GetCarbonIntensityAsync(location, periodStartTime, periodEndTime);
-            result.AddRange(interimResult);
+            foreach (var location in locations)
+            {
+                IEnumerable<EmissionsData> interimResult = await GetCarbonIntensityAsync(location, periodStartTime, periodEndTime);
+                result.AddRange(interimResult);
+            }
         }
         return result;
     }
@@ -66,9 +70,12 @@ public class WattTimeDataSource : ICarbonIntensityDataSource
         this.Logger.LogInformation($"Getting carbon intensity forecast for location {location}");
         using (var activity = Activity.StartActivity())
         {
-            var balancingAuthority = await this.GetBalancingAuthority(location, activity);
-                var forecast = await this.WattTimeClient.GetCurrentForecastAsync(balancingAuthority); 
+            using (MiniProfiler.Current.Step("Get Current CI Forecast Async in DataSource"))
+            {
+                var balancingAuthority = await this.GetBalancingAuthority(location, activity);
+                var forecast = await this.WattTimeClient.GetCurrentForecastAsync(balancingAuthority);
                 return ForecastToEmissionsForecast(forecast, location, DateTimeOffset.UtcNow);
+            }
         } 
     }
 
@@ -78,18 +85,21 @@ public class WattTimeDataSource : ICarbonIntensityDataSource
         this.Logger.LogInformation($"Getting carbon intensity forecast for location {location} requested at {requestedAt}");
         using (var activity = Activity.StartActivity())
         {
-            var balancingAuthority = await this.GetBalancingAuthority(location, activity);
-            var roundedRequestedAt = TimeToLowestIncrement(requestedAt);
-            var forecast = await this.WattTimeClient.GetForecastOnDateAsync(balancingAuthority, roundedRequestedAt);
-            if (forecast == null)
+            using (MiniProfiler.Current.Step("Get Carbon Intensity Forecast Async in Data Source"))
             {
-                var ex = new ArgumentException($"No forecast was generated at the requested time {roundedRequestedAt}");
-                activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-                Logger.LogError(ex, ex.Message);
-                throw ex;
+                var balancingAuthority = await this.GetBalancingAuthority(location, activity);
+                var roundedRequestedAt = TimeToLowestIncrement(requestedAt);
+                var forecast = await this.WattTimeClient.GetForecastOnDateAsync(balancingAuthority, roundedRequestedAt);
+                if (forecast == null)
+                {
+                    var ex = new ArgumentException($"No forecast was generated at the requested time {roundedRequestedAt}");
+                    activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+                    Logger.LogError(ex, ex.Message);
+                    throw ex;
+                }
+                // keep input from the user.
+                return ForecastToEmissionsForecast(forecast, location, requestedAt);
             }
-            // keep input from the user.
-            return ForecastToEmissionsForecast(forecast, location, requestedAt); 
         }
     }
 

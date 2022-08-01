@@ -11,6 +11,7 @@ using System.Net;
 using CarbonAware.Tools.WattTimeClient.Configuration;
 using CarbonAware.Tools.WattTimeClient.Constants;
 using System.Globalization;
+using StackExchange.Profiling;
 
 namespace CarbonAware.Tools.WattTimeClient;
 
@@ -293,11 +294,14 @@ public class WattTimeClient : IWattTimeClient
                 }
             }
 
-            var result = await this.GetAsyncStringWithAuthRetry(url);
+            using (MiniProfiler.Current.Step("Make Async Request in WattTime Client"))
+            {
+                var result = await this.GetAsyncStringWithAuthRetry(url);
 
-            Log.LogDebug("For query {url}, received data {result}", url, result);
+                Log.LogDebug("For query {url}, received data {result}", url, result);
 
-            return result;
+                return result;
+            }
         }
     }
 

@@ -198,26 +198,30 @@ public class CarbonAwareController : ControllerBase
     {
         using (var activity = Activity.StartActivity())
         {
-            foreach (var forecastBatchDTO in requestedForecasts)
+            using (MiniProfiler.Current.Step("Batch Forecast Fore Each in Requested Forecasts in Controller"))
             {
-                IEnumerable<Location> locationEnumerable = CreateLocationsFromQueryString(new string[] { forecastBatchDTO.Location! });
-                var props = new Dictionary<string, object?>() {
+                foreach (var forecastBatchDTO in requestedForecasts)
+                {
+                    IEnumerable<Location> locationEnumerable = CreateLocationsFromQueryString(new string[] { forecastBatchDTO.Location! });
+                    var props = new Dictionary<string, object?>() {
                     { CarbonAwareConstants.Locations, locationEnumerable },
                     { CarbonAwareConstants.Start, forecastBatchDTO.DataStartAt },
                     { CarbonAwareConstants.End, forecastBatchDTO.DataEndAt },
                     { CarbonAwareConstants.Duration, forecastBatchDTO.WindowSize },
                     { CarbonAwareConstants.ForecastRequestedAt, forecastBatchDTO.RequestedAt },
                 };
-                // NOTE: Current Error Handling done by HttpResponseExceptionFilter can't handle exceptions
-                // thrown by the underline framework for this method, therefore all exceptions are handled as 500.
-                // Refactoring with a middleware exception handler should cover this use case too.
+                    // NOTE: Current Error Handling done by HttpResponseExceptionFilter can't handle exceptions
+                    // thrown by the underline framework for this method, therefore all exceptions are handled as 500.
+                    // Refactoring with a middleware exception handler should cover this use case too.
 
-                using (MiniProfiler.Current.Step("Batch Forecast Data Async"))
-                {
-                    var forecast = await _aggregator.GetForecastDataAsync(props);
-                    yield return EmissionsForecastDTO.FromEmissionsForecast(forecast);
+                    using (MiniProfiler.Current.Step("Batch Forecast Data Async"))
+                    {
+                        var forecast = await _aggregator.GetForecastDataAsync(props);
+                        yield return EmissionsForecastDTO.FromEmissionsForecast(forecast);
+                    }
                 }
             }
+           
         }
     }
 

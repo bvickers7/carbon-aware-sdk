@@ -2,6 +2,7 @@ using CarbonAware.Extensions;
 using CarbonAware.Interfaces;
 using CarbonAware.Model;
 using Microsoft.Extensions.Logging;
+using StackExchange.Profiling;
 using System.Collections;
 using System.Diagnostics;
 using System.Globalization;
@@ -90,9 +91,12 @@ public class CarbonAwareAggregator : ICarbonAwareAggregator
             var forecastRequestedAt = GetOffsetOrDefault(props, CarbonAwareConstants.ForecastRequestedAt, default);
             _logger.LogDebug($"Aggregator getting carbon intensity forecast from data source for location {locations.First()} and requestedAt {forecastRequestedAt}");
 
-            forecast = await this._dataSource.GetCarbonIntensityForecastAsync(locations.First(), forecastRequestedAt);
-            var emissionsForecast = ProcessAndValidateForecast(forecast, props);
-            return emissionsForecast;
+            using (MiniProfiler.Current.Step("Get Forecase Data Async in Aggregator"))
+            {
+                forecast = await this._dataSource.GetCarbonIntensityForecastAsync(locations.First(), forecastRequestedAt);
+                var emissionsForecast = ProcessAndValidateForecast(forecast, props);
+                return emissionsForecast;
+            }
         }
     }
     private void ValidateInput(IDictionary props)
