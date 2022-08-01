@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using CarbonAware.Model;
 using System.Diagnostics;
+using StackExchange.Profiling;
 
 namespace CarbonAware.WebApi.Controllers;
 
@@ -210,8 +211,12 @@ public class CarbonAwareController : ControllerBase
                 // NOTE: Current Error Handling done by HttpResponseExceptionFilter can't handle exceptions
                 // thrown by the underline framework for this method, therefore all exceptions are handled as 500.
                 // Refactoring with a middleware exception handler should cover this use case too.
-                var forecast = await _aggregator.GetForecastDataAsync(props);
-                yield return EmissionsForecastDTO.FromEmissionsForecast(forecast);
+
+                using (MiniProfiler.Current.Step("Batch Forecast Data Async"))
+                {
+                    var forecast = await _aggregator.GetForecastDataAsync(props);
+                    yield return EmissionsForecastDTO.FromEmissionsForecast(forecast);
+                }
             }
         }
     }
@@ -244,18 +249,21 @@ public class CarbonAwareController : ControllerBase
                 { CarbonAwareConstants.Start, startTime },
                 { CarbonAwareConstants.End, endTime },
             };
-
-            var result = await this._aggregator.CalculateAverageCarbonIntensityAsync(props);
-
-            CarbonIntensityDTO carbonIntensity = new CarbonIntensityDTO
+            using (MiniProfiler.Current.Step("Calculate Average CI Async"))
             {
-                Location = location,
-                StartTime = startTime,
-                EndTime = endTime,
-                CarbonIntensity = result,
-            };
-            _logger.LogDebug("calculated average carbon intensity: {carbonIntensity}", carbonIntensity);
-            return Ok(carbonIntensity);
+                var result = await this._aggregator.CalculateAverageCarbonIntensityAsync(props);
+            
+                CarbonIntensityDTO carbonIntensity = new CarbonIntensityDTO
+                {
+                    Location = location,
+                    StartTime = startTime,
+                    EndTime = endTime,
+                    CarbonIntensity = result,
+                };
+                _logger.LogDebug("calculated average carbon intensity: {carbonIntensity}", carbonIntensity);
+                return Ok(carbonIntensity);
+
+            }
         }
     }
 
@@ -295,9 +303,12 @@ public class CarbonAwareController : ControllerBase
     {
         // NOTE: Any auth information would need to be redacted from logging
         _logger.LogInformation("Calling aggregator GetEmissionsDataAsync with payload {@props}", props);
-
-        var response = await _aggregator.GetEmissionsDataAsync(props);
-        return response.Any() ? Ok(response) : NoContent();
+        
+        using (MiniProfiler.Current.Step("Getting Emission Data"))
+        {
+            var response = await _aggregator.GetEmissionsDataAsync(props);
+            return response.Any() ? Ok(response) : NoContent();
+        }
     }
 
     private IEnumerable<Location> CreateLocationsFromQueryString(string[] queryStringLocations)
