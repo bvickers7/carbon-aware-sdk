@@ -66,7 +66,7 @@ public class JsonDataSource : ICarbonIntensityDataSource
         throw new NotImplementedException();
     }
 
-    public IAsyncEnumerable<EmissionsForecast> GetCarbonIntensityForecastAsync(Location location, DateTimeOffset startTime, DateTimeOffset endTime)
+    public Task<EmissionsForecast> GetCarbonIntensityForecastAsync(Location location, DateTimeOffset generatedAt)
     {
         throw new NotImplementedException();
     }

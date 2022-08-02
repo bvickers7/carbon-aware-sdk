@@ -59,70 +59,58 @@ public class WattTimeDataSource : ICarbonIntensityDataSource
         }
         return result;
     }
-    
+
     /// <inheritdoc />
     public async Task<EmissionsForecast> GetCurrentCarbonIntensityForecastAsync(Location location)
     {
         this.Logger.LogInformation($"Getting carbon intensity forecast for location {location}");
-
         using (var activity = Activity.StartActivity())
         {
-            BalancingAuthority balancingAuthority = await this.GetBalancingAuthority(location, activity);
-            var data = await this.WattTimeClient.GetCurrentForecastAsync(balancingAuthority);
+            var balancingAuthority = await this.GetBalancingAuthority(location, activity);
+                var forecast = await this.WattTimeClient.GetCurrentForecastAsync(balancingAuthority); 
+                return ForecastToEmissionsForecast(forecast, location, DateTimeOffset.UtcNow);
+        } 
+    }
 
-            var duration = GetDurationFromGridEmissionDataPoints(data.ForecastData.FirstOrDefault(), data.ForecastData.Skip(1)?.FirstOrDefault());
-            
-            // Linq statement to convert WattTime forecast data into EmissionsData for the CarbonAware SDK.
-            var forecastData = data.ForecastData.Select(e => new EmissionsData() 
-            { 
-                Location = e.BalancingAuthorityAbbreviation, 
-                Rating = ConvertMoerToGramsPerKilowattHour(e.Value), 
-                Time = e.PointTime,
-                Duration = duration
-            });
-
-            return new EmissionsForecast()
+    /// <inheritdoc />
+    public async Task<EmissionsForecast> GetCarbonIntensityForecastAsync(Location location, DateTimeOffset requestedAt)
+    {
+        this.Logger.LogInformation($"Getting carbon intensity forecast for location {location} requested at {requestedAt}");
+        using (var activity = Activity.StartActivity())
+        {
+            var balancingAuthority = await this.GetBalancingAuthority(location, activity);
+            var roundedRequestedAt = TimeToLowestIncrement(requestedAt);
+            var forecast = await this.WattTimeClient.GetForecastOnDateAsync(balancingAuthority, roundedRequestedAt);
+            if (forecast == null)
             {
-                GeneratedAt = data.GeneratedAt,
-                Location = location,
-                ForecastData = forecastData,
-            };
+                var ex = new ArgumentException($"No forecast was generated at the requested time {roundedRequestedAt}");
+                activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+                Logger.LogError(ex, ex.Message);
+                throw ex;
+            }
+            // keep input from the user.
+            return ForecastToEmissionsForecast(forecast, location, requestedAt); 
         }
     }
 
-    public async IAsyncEnumerable<EmissionsForecast> GetCarbonIntensityForecastAsync(Location location, DateTimeOffset startTime, DateTimeOffset endTime)
+    private EmissionsForecast ForecastToEmissionsForecast(Forecast forecast, Location location, DateTimeOffset requestedAt) 
     {
-        this.Logger.LogInformation($"Getting carbon intensity forecast for location {location} with startTime {startTime} and endTime {endTime}");
-
-        using (var activity = Activity.StartActivity())
+        var duration = GetDurationFromGridEmissionDataPoints(forecast.ForecastData);
+        var forecastData = forecast.ForecastData.Select(e => new EmissionsData()
         {
-            BalancingAuthority balancingAuthority = await this.GetBalancingAuthority(location, activity);
-
-            // Split start/end interval into multiple 24hr (max) intervals because can't request more than 24 hrs at a time.
-            var intervals = SplitIntervalInto24Chunk(startTime, endTime);
-            foreach ((var start, var end) in intervals)
-            {
-                var data = await this.WattTimeClient.GetForecastByDateAsync(balancingAuthority, start, end);
-                foreach (var elem in data)
-                {
-                    var duration = GetDurationFromGridEmissionDataPoints(elem.ForecastData.FirstOrDefault(), elem.ForecastData.Skip(1)?.FirstOrDefault());
-                    var forecastData = elem.ForecastData.Select(e => new EmissionsData()
-                    {
-                        Location = e.BalancingAuthorityAbbreviation,
-                        Rating = ConvertMoerToGramsPerKilowattHour(e.Value),
-                        Time = e.PointTime,
-                        Duration = duration
-                    });
-                    var emForecast = new EmissionsForecast()
-                    {
-                        GeneratedAt = elem.GeneratedAt,
-                        Location = location,
-                        ForecastData = forecastData
-                    };
-                    yield return emForecast;
-                }
-            }
-        }
+            Location = e.BalancingAuthorityAbbreviation,
+            Rating = ConvertMoerToGramsPerKilowattHour(e.Value),
+            Time = e.PointTime,
+            Duration = duration
+        });
+        var emissionsForecast = new EmissionsForecast()
+        {
+            GeneratedAt = forecast.GeneratedAt,
+            Location = location,
+            ForecastData = forecastData
+        };
+        emissionsForecast.RequestedAt = requestedAt;
+        return emissionsForecast;
     }
 
     private async Task<IEnumerable<EmissionsData>> GetCarbonIntensityAsync(Location location, DateTimeOffset periodStartTime, DateTimeOffset periodEndTime)
@@ -154,29 +142,48 @@ public class WattTimeDataSource : ICarbonIntensityDataSource
         return value * LBS_TO_GRAMS_CONVERSION_FACTOR / MWH_TO_KWH_CONVERSION_FACTOR;
     }
 
-    private IEnumerable<EmissionsData> ConvertToEmissionsData(IEnumerable<GridEmissionDataPoint> data)
+    private IEnumerable<EmissionsData> ConvertToEmissionsData(IEnumerable<GridEmissionDataPoint> gridEmissionDataPoints)
     {
+        var defaultDuration = GetDurationFromGridEmissionDataPointsOrDefault(gridEmissionDataPoints, TimeSpan.Zero);
+        
         // Linq statement to convert WattTime forecast data into EmissionsData for the CarbonAware SDK.
-        return data.Select(e => new EmissionsData() 
+        return gridEmissionDataPoints.Select(e => new EmissionsData() 
                     { 
                         Location = e.BalancingAuthorityAbbreviation, 
                         Rating = ConvertMoerToGramsPerKilowattHour(e.Value), 
                         Time = e.PointTime,
-                        Duration = FrequencyToTimeSpan(e.Frequency)
+                        Duration = FrequencyToTimeSpanOrDefault(e.Frequency, defaultDuration)
                     });
     }
 
-    private TimeSpan GetDurationFromGridEmissionDataPoints(GridEmissionDataPoint? firstPoint, GridEmissionDataPoint? secondPoint)
+    private TimeSpan GetDurationFromGridEmissionDataPoints(IEnumerable<GridEmissionDataPoint> gridEmissionDataPoints)
     {
+        var firstPoint = gridEmissionDataPoints.FirstOrDefault(); 
+        var secondPoint = gridEmissionDataPoints.Skip(1)?.FirstOrDefault();
+
         var first = firstPoint ?? throw new WattTimeClientException("Too few data points returned"); 
         var second = secondPoint ?? throw new WattTimeClientException("Too few data points returned");
 
-        return second.PointTime - first.PointTime;
+        // Handle chronological and reverse-chronological data by using `.Duration()` to get
+        // the absolute value of the TimeSpan between the two points.
+        return first.PointTime.Subtract(second.PointTime).Duration();
     }
 
-    private TimeSpan FrequencyToTimeSpan(int? frequency)
+    private TimeSpan GetDurationFromGridEmissionDataPointsOrDefault(IEnumerable<GridEmissionDataPoint> gridEmissionDataPoints, TimeSpan defaultValue)
     {
-        return (frequency != null) ? TimeSpan.FromSeconds((double)frequency) : TimeSpan.Zero;
+        try 
+        {
+            return GetDurationFromGridEmissionDataPoints(gridEmissionDataPoints);
+        }
+        catch (WattTimeClientException) 
+        {
+            return defaultValue;   
+        }
+    }
+
+    private TimeSpan FrequencyToTimeSpanOrDefault(int? frequency, TimeSpan defaultValue)
+    {
+        return (frequency != null) ? TimeSpan.FromSeconds((double)frequency) : defaultValue;
     }
 
     private async Task<BalancingAuthority> GetBalancingAuthority(Location location, Activity? activity)
@@ -202,32 +209,9 @@ public class WattTimeDataSource : ICarbonIntensityDataSource
         return balancingAuthority;
     }
 
-    private IEnumerable<Tuple<DateTimeOffset, DateTimeOffset>> SplitIntervalInto24Chunk(DateTimeOffset start, DateTimeOffset end)
+    private DateTimeOffset TimeToLowestIncrement(DateTimeOffset date, int minutes = 5)
     {
-        // Find total days (in terms of 24 hrs).
-        // Round up such that (6/1 12pm) - (6/2 4pm) will be 2 days: (6/1 12pm - 6/2 12pm) and (6/2 12pm - 6/2 4pm)
-        int daysBetween = (int)Math.Ceiling((end - start).TotalDays);
-        List<Tuple<DateTimeOffset, DateTimeOffset>> days = new();
-        DateTimeOffset currentStart = start;
-
-        while (daysBetween >= 0)
-        {
-            DateTimeOffset newEnd = currentStart.AddDays(1);
-
-            // When final interval is less than 24hrs, use the actual end
-            if (newEnd > end)
-            {
-                days.Add(Tuple.Create(currentStart, end));
-                break;
-            }
-            else
-            {
-                days.Add(Tuple.Create(currentStart, newEnd));
-            }
-
-            currentStart = newEnd;
-            daysBetween--;
-        }
-        return days;
+        var d = TimeSpan.FromMinutes(minutes);
+        return new DateTimeOffset((date.Ticks / d.Ticks) * d.Ticks, date.Offset);
     }
 }
