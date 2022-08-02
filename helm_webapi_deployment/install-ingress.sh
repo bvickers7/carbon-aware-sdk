@@ -1,6 +1,9 @@
 #!/bin/bash
 set -x
 
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm repo update
+
 helm install ingress-nginx ingress-nginx/ingress-nginx \
     --version 4.1.3 \
     --namespace ingress-basic \
