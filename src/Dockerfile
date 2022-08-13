@@ -3,10 +3,8 @@ WORKDIR /app
 
 # Copy everything
 COPY . ./
-# Restore as distinct layers
-RUN dotnet restore
 # Build and publish a release
-RUN dotnet publish -c Release -o out
+RUN dotnet publish CarbonAware.WebApi/src/CarbonAware.WebApi.csproj -c Release -o out
 
 # Build runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:6.0
