@@ -8,7 +8,7 @@ image:
   repository: carbonawaretoyacr.azurecr.io/ca_webapi_0812
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "comm1"
+  tag: "comm2"
 
 imagePullSecrets: []
 nameOverride: "ca-with-ingresslbl-helm"
