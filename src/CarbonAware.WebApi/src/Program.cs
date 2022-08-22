@@ -1,7 +1,7 @@
 using System.Reflection;
 using CarbonAware;
 using CarbonAware.Aggregators.Configuration;
-using CarbonAware.WebApi.Filters;
+using CarbonAware.WebApi.Middleware;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using CarbonAware.WebApi.Configuration;
 
@@ -9,10 +9,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers(options =>
-{
-    options.Filters.Add<HttpResponseExceptionFilter>();
-});
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -57,6 +53,8 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.MapHealthChecks("/health");
+
+app.UseExceptionHandler(err => err.UseCustomErrors());
 
 app.Run();
 
