@@ -1,47 +1,42 @@
-using System.Diagnostics;
+using System.Net;
 using System.Text.Json;
-using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace CarbonAware.WebApi.Middleware;
 
-public static class HttpExceptionMiddlewareHandler
+public class HttpExceptionMiddlewareHandler
 {
-    public static void UseCustomErrors(this IApplicationBuilder app)
+    private readonly RequestDelegate _next;
+    private readonly ILogger<HttpExceptionMiddlewareHandler> _logger;
+    private IOptionsMonitor<CarbonAwareVariablesConfiguration> _options;
+
+    public HttpExceptionMiddlewareHandler(RequestDelegate next, ILogger<HttpExceptionMiddlewareHandler> logger, IOptionsMonitor<CarbonAwareVariablesConfiguration> options)
     {
-        app.Use(HandleResponse);
+        _logger = logger;
+        _next = next;
+        _options = options;
     }
-
-    private static Task HandleResponse(HttpContext httpContext, Func<Task> next)
-        => WriteResponse(httpContext);
-
-    private static async Task WriteResponse(HttpContext httpContext)
+    public async Task InvokeAsync(HttpContext httpContext)
     {
-        var exceptionDetails = httpContext.Features.Get<IExceptionHandlerFeature>();
-        var ex = exceptionDetails?.Error;
-
-        if (ex != null)
+        try
         {
-            httpContext.Response.ContentType = "application/problem+json";
-
-            var title = "An error occured: " + ex.Message;
-            var details = ex.ToString();
-            
-            var problem = new ProblemDetails
-            {
-                Status = 500,
-                Title = title,
-                Detail = details
-            };
-
-            var traceId = Activity.Current?.Id ?? httpContext?.TraceIdentifier;
-            if (traceId != null)
-            {
-                problem.Extensions["traceId"] = traceId;
-            }
-
-            var stream = httpContext!.Response.Body;
-            await JsonSerializer.SerializeAsync(stream, problem);
+            await _next(httpContext);
         }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Something went wrong: {ex}");
+            await HandleExceptionAsync(httpContext, ex);
+        }
+    }
+    private async Task HandleExceptionAsync(HttpContext context, Exception exception)
+    {
+         var response = new HttpValidationProblemDetails() {
+                            Title = exception.GetType().ToString(),
+                            Status = (int)HttpStatusCode.InternalServerError,
+                            Detail = exception.Message
+                };
+        context.Response.ContentType = "application/problem+json";
+        context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+        await context.Response.WriteAsync(JsonSerializer.Serialize<HttpValidationProblemDetails>(response));
     }
 }

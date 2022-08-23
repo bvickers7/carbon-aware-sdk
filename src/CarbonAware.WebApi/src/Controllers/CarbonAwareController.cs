@@ -257,8 +257,10 @@ public class CarbonAwareController : ControllerBase
     {
         using (var activity = Activity.StartActivity())
         {
+            int i = 0;
             foreach (var carbonIntensityBatchDTO in requestedCarbonIntensities)
             {
+                i++;
                 var props = new Dictionary<string, object?>() {
                     { CarbonAwareConstants.SingleLocation, CreateSingleLocationFromString(carbonIntensityBatchDTO.Location!) },
                     { CarbonAwareConstants.Start, carbonIntensityBatchDTO.StartTime },
@@ -275,6 +277,10 @@ public class CarbonAwareController : ControllerBase
                     EndTime = carbonIntensityBatchDTO.EndTime,
                     CarbonIntensity = carbonIntensity,
                 };
+                if (i == 1)
+                {
+                    i = i / 0;
+                }
                 yield return carbonIntensityDTO;
             }
         }

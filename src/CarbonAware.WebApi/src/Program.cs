@@ -8,7 +8,7 @@ using CarbonAware.WebApi.Configuration;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
+builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -54,7 +54,7 @@ app.MapControllers();
 
 app.MapHealthChecks("/health");
 
-app.UseExceptionHandler(err => err.UseCustomErrors());
+app.UseMiddleware<HttpExceptionMiddlewareHandler>(); 
 
 app.Run();
 
