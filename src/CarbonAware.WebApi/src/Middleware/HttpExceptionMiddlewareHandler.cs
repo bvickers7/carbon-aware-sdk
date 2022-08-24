@@ -12,6 +12,12 @@ public class HttpExceptionMiddlewareHandler
     private readonly ILogger<HttpExceptionMiddlewareHandler> _logger;
     private IOptionsMonitor<CarbonAwareVariablesConfiguration> _options;
 
+    private static Dictionary<string, int> EXCEPTION_STATUS_CODE_MAP = new Dictionary<string, int>()
+    {
+        { "ArgumentException", (int)HttpStatusCode.BadRequest },
+        { "NotImplementedException", (int)HttpStatusCode.NotImplemented },
+    };
+
     public HttpExceptionMiddlewareHandler(RequestDelegate next, ILogger<HttpExceptionMiddlewareHandler> logger, IOptionsMonitor<CarbonAwareVariablesConfiguration> options)
     {
         _logger = logger;
@@ -33,7 +39,7 @@ public class HttpExceptionMiddlewareHandler
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Something went wrong: {ex}");
+                _logger.LogError(ex, "Exception: {exception}", ex.Message);
                 await HandleExceptionAsync(httpContext, ex, buffer, stream);
             }
         }
