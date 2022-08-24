@@ -32,6 +32,8 @@ builder.Services.AddMonitoringAndTelemetry(builder.Configuration);
 
 var app = builder.Build();
 
+app.UseMiddleware<HttpExceptionMiddlewareHandler>();
+
 if (config.WebApiRoutePrefix != null)
 {
     app.UsePathBase(config.WebApiRoutePrefix);
@@ -53,8 +55,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.MapHealthChecks("/health");
-
-app.UseMiddleware<HttpExceptionMiddlewareHandler>(); 
 
 app.Run();
 

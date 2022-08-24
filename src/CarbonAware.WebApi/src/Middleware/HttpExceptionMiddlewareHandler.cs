@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Diagnostics;
 using System.Net;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
@@ -16,27 +18,55 @@ public class HttpExceptionMiddlewareHandler
         _next = next;
         _options = options;
     }
+
     public async Task InvokeAsync(HttpContext httpContext)
     {
-        try
-        {
-            await _next(httpContext);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError($"Something went wrong: {ex}");
-            await HandleExceptionAsync(httpContext, ex);
+        using (var buffer = new MemoryStream()) {
+            var stream = httpContext.Response.Body;
+            try
+            {
+                httpContext.Response.Body = buffer;
+                await _next(httpContext);
+                httpContext.Response.Body.Seek(0, SeekOrigin.Begin);
+                await buffer.CopyToAsync(stream);
+                httpContext.Response.Body = stream;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Something went wrong: {ex}");
+                await HandleExceptionAsync(httpContext, ex, buffer, stream);
+            }
         }
     }
-    private async Task HandleExceptionAsync(HttpContext context, Exception exception)
+
+    private async Task HandleExceptionAsync(HttpContext context, Exception exception, MemoryStream buffer, Stream stream)
     {
-         var response = new HttpValidationProblemDetails() {
-                            Title = exception.GetType().ToString(),
-                            Status = (int)HttpStatusCode.InternalServerError,
-                            Detail = exception.Message
-                };
+        var response = new HttpValidationProblemDetails()
+        {
+            Title = exception.GetType().ToString(),
+            Status = (int)HttpStatusCode.InternalServerError,
+            Detail = exception.Message
+        };
+
+        var traceId = Activity.Current?.Id ?? context.TraceIdentifier;
+        if (traceId != null)
+        {
+            response.Extensions["traceId"] = traceId;
+        }
+
+        foreach (DictionaryEntry entry in exception.Data)
+        {
+            if (entry.Value is string[] messages && entry.Key is string key){
+                response.Errors[key] = messages;
+            }
+        }
+        context.Response.Clear();
         context.Response.ContentType = "application/problem+json";
         context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-        await context.Response.WriteAsync(JsonSerializer.Serialize<HttpValidationProblemDetails>(response));
+        var json = JsonSerializer.Serialize<HttpValidationProblemDetails>(response);
+        await context.Response.WriteAsync(json);
+        context.Response.Body.Seek(0, SeekOrigin.Begin);
+        await buffer.CopyToAsync(stream);
+        context.Response.Body = stream;
     }
 }

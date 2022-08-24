@@ -257,7 +257,7 @@ public class CarbonAwareController : ControllerBase
     {
         using (var activity = Activity.StartActivity())
         {
-            int i = 0;
+            var i = 0;
             foreach (var carbonIntensityBatchDTO in requestedCarbonIntensities)
             {
                 var props = new Dictionary<string, object?>() {
@@ -268,6 +268,10 @@ public class CarbonAwareController : ControllerBase
                 // NOTE: Current Error Handling done by HttpResponseExceptionFilter can't handle exceptions
                 // thrown by the underline framework for this method, therefore all exceptions are handled as 500.
                 // Refactoring with a middleware exception handler should cover this use case too.
+                if (i > 3)
+                {
+                    props.Clear();
+                }
                 var carbonIntensity = await this._aggregator.CalculateAverageCarbonIntensityAsync(props);
                 CarbonIntensityDTO carbonIntensityDTO = new CarbonIntensityDTO
                 {
@@ -277,6 +281,7 @@ public class CarbonAwareController : ControllerBase
                     CarbonIntensity = carbonIntensity,
                 };
                 yield return carbonIntensityDTO;
+                i++;
             }
         }
     }
