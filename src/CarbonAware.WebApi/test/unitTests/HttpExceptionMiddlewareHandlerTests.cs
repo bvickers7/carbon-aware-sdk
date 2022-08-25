@@ -17,21 +17,18 @@ namespace CarbonAware.WepApi.UnitTests;
 public class HttpExceptionMiddlewareHandlerTests
 {
 
-    /// <summary>
-    /// 
-    /// </summary>
     [Test]
-    public async Task InvokeAsyncSuccessTest()
+    public async Task InvokeAsync_SuccessTest()
     {
-        var mockHttpContext = CreateDefaultHttpContext();
+        var context = CreateDefaultHttpContext();
         var mockRequestDelegate = new Mock<RequestDelegate>();
-        mockRequestDelegate.Setup(requestDelegate => requestDelegate.Invoke(mockHttpContext));
+        mockRequestDelegate.Setup(x => x.Invoke(context));
         var mockLogger = new Mock<ILogger<HttpExceptionMiddlewareHandler>>();
         var mockOptions = new Mock<IOptionsMonitor<CarbonAwareVariablesConfiguration>>();
         var middleware = new HttpExceptionMiddlewareHandler(mockRequestDelegate.Object, mockLogger.Object, mockOptions.Object);
-        await middleware.InvokeAsync(mockHttpContext);
+        await middleware.InvokeAsync(context);
 
-        mockRequestDelegate.Verify(requestDelegate => requestDelegate.Invoke(mockHttpContext), Times.Once);
+        mockRequestDelegate.Verify(requestDelegate => requestDelegate.Invoke(context), Times.Once);
     }
 
     [Test]
