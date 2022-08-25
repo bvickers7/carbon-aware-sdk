@@ -35,13 +35,13 @@ public class HttpExceptionMiddlewareHandlerTests
     }
 
     [Test]
-    public async Task InvokeAsyncExceptionTest()
+    public async Task InvokeAsync_WithException()
     {
         var context = CreateDefaultHttpContext();
         var mockRequestDelegate = SetupRequestDelegate(context, new Exception("New Exception"));
         var mockLogger = new Mock<ILogger<HttpExceptionMiddlewareHandler>>();
         var mockOptions = new Mock<IOptionsMonitor<CarbonAwareVariablesConfiguration>>();
-        mockOptions.SetupGet(x => x.CurrentValue).Returns(new CarbonAwareVariablesConfiguration() { VerboseApi = false });
+        mockOptions.Setup(x => x.CurrentValue).Returns(new CarbonAwareVariablesConfiguration() { VerboseApi = false });
         var middleware = new HttpExceptionMiddlewareHandler(mockRequestDelegate.Object, mockLogger.Object, mockOptions.Object);
         await middleware.InvokeAsync(context);
 
@@ -51,6 +51,28 @@ public class HttpExceptionMiddlewareHandlerTests
         Assert.NotNull(result);
         Assert.That(result!.Title, Is.EqualTo(HttpStatusCode.InternalServerError.ToString()));
         Assert.That(result!.Status, Is.EqualTo((int)HttpStatusCode.InternalServerError));
+    }
+
+    [Test]
+    public async Task InvokeAsync_WithArgumentException()
+    {
+        var context = CreateDefaultHttpContext();
+        var msg = "Testing ArgumentException";
+        var expectedException = new ArgumentException(msg);
+        var mockRequestDelegate = SetupRequestDelegate(context, expectedException);
+        var mockLogger = new Mock<ILogger<HttpExceptionMiddlewareHandler>>();
+        var mockOptions = new Mock<IOptionsMonitor<CarbonAwareVariablesConfiguration>>();
+        mockOptions.Setup(x => x.CurrentValue).Returns(new CarbonAwareVariablesConfiguration() { VerboseApi = false });
+        var middleware = new HttpExceptionMiddlewareHandler(mockRequestDelegate.Object, mockLogger.Object, mockOptions.Object);
+        await middleware.InvokeAsync(context);
+
+        Assert.That(context.Response.StatusCode, Is.EqualTo((int)HttpStatusCode.BadRequest));
+        Assert.That(context.Response.ContentType, Is.EqualTo("application/problem+json"));
+        var result = await GetProblemDetailsFromContext(context);
+        Assert.NotNull(result);
+        Assert.That(result!.Title, Is.EqualTo(expectedException.GetType().Name));
+        Assert.That(result!.Status, Is.EqualTo((int)HttpStatusCode.BadRequest));
+        Assert.That(result!.Detail, Is.EqualTo(msg));
     }
 
     private Mock<HttpContext> CreateMockHttpContext()
