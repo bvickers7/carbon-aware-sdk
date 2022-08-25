@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Diagnostics;
 using System.Net;
+using System.Net.Mime;
 using System.Text.Json;
 using CarbonAware.Interfaces;
 using Microsoft.Extensions.Options;
@@ -51,9 +52,9 @@ public class HttpExceptionMiddlewareHandler
         var response = CreateProblemDetailsResponse(context, exception);
         context.Response.Clear();
         context.Response.ContentType = "application/problem+json";
-        context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-        var json = JsonSerializer.Serialize<HttpValidationProblemDetails>(response);
-        await context.Response.WriteAsync(json);
+        context.Response.StatusCode = (int)response.Status!;
+        var jsonResponse = JsonSerializer.Serialize<HttpValidationProblemDetails>(response);
+        await context.Response.WriteAsync(jsonResponse);
         context.Response.Body.Seek(0, SeekOrigin.Begin);
         await buffer.CopyToAsync(stream);
         context.Response.Body = stream;
