@@ -1,11 +1,20 @@
 using CarbonAware.Aggregators.CarbonAware;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using CarbonAware.Aggregators.Configuration;
+using System.Reflection;
+using Microsoft.Extensions.Configuration;
 
 namespace CarbonAware.WebApi.Filters;
 
 public class CarbonAwareParametersBaseDtoOperationFilter : IOperationFilter
 {
+    private IConfiguration  _configuration;
+    CarbonAwareParametersBaseDtoOperationFilter(IConfiguration configuration)
+    {
+        _configuration = configuration;
+    }
+
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
     {
         // Find api parameters of non-overridden inherited properties on CarbonAwareParametersBaseDTO child classes.

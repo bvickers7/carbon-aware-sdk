@@ -1,6 +1,8 @@
 using CarbonAware.Aggregators.CarbonAware;
+using CarbonAware.Aggregators.Configuration;
 using CarbonAware.CLI.Common;
 using CarbonAware.CLI.Model;
+using Microsoft.Extensions.Configuration;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
@@ -36,8 +38,14 @@ class EmissionsCommand : Command
             {
                 Arity = ArgumentArity.ZeroOrOne,
             };
-    public EmissionsCommand() : base("emissions", LocalizableStrings.EmissionsCommandDescription)
+    public EmissionsCommand(IConfiguration configuration) : base("emissions", LocalizableStrings.EmissionsCommandDescription)
     {
+        var dataSourceConfig = configuration.GetSection(CarbonAwareVariablesConfiguration.Key).Get<CarbonAwareVariablesConfiguration>();
+        var datasource = dataSourceConfig.CarbonIntensityDataSource; //.GetValue("IEmissionDataSource");
+        foreach(var p in CarbonAwareParametersBaseDTO.AdditionalParameters(datasource))
+        {
+            AddOption(new Option<string?>($"--{p.Replace(' ', '-')}"));
+        }
         AddOption(_requiredLocation);
         AddOption(_startTime);
         AddOption(_endTime);
@@ -76,6 +84,7 @@ class EmissionsCommand : Command
             Start = startTime,
             End = endTime
         };
+
         // Call the aggregator.
         List<EmissionsDataDTO> emissions = new();
         

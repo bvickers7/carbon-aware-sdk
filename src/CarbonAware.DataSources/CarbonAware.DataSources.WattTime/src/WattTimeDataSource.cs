@@ -8,11 +8,25 @@ using System.Diagnostics;
 
 namespace CarbonAware.DataSources.WattTime;
 
+public class AdditionalParameters : IAdditionalParameters
+{
+    public string[] GetParameters { get; init; }
+
+    public AdditionalParameters()
+    {
+        GetParameters = new string[] { "latitude", "longitude" };
+    }
+}
 /// <summary>
 /// Reprsents a wattime data source.
 /// </summary>
 public class WattTimeDataSource : ICarbonIntensityDataSource
 {
+    public static string AdditionalParameters()
+    {
+        return "extended forecast";
+    }
+    
     public string Name => "WattTimeDataSource";
 
     public string Description => throw new NotImplementedException();

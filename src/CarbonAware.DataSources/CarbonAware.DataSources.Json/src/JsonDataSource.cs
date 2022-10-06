@@ -12,6 +12,11 @@ namespace CarbonAware.DataSources.Json;
 /// </summary>
 public class JsonDataSource : ICarbonIntensityDataSource
 {
+    public static string AdditionalParameters()
+    {
+        return "silly forecast";
+    }
+
     public string Name => "JsonDataSource";
 
     public string Description => "Example plugin to read data from a json for Carbon Aware SDK";

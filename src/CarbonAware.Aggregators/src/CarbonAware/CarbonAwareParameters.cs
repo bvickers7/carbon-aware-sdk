@@ -1,4 +1,6 @@
 using CarbonAware.Model;
+using CarbonAware.Interfaces;
+using CarbonAware.DataSources.WattTime;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json.Serialization;
 
@@ -12,6 +14,28 @@ public class CarbonAwareParametersBaseDTO
     virtual public DateTimeOffset? End { get; set; }
     virtual public int? Duration { get; set; }
     virtual public DateTimeOffset? Requested { get; set; }
+
+    public static string[] AdditionalParameters(string datasource)
+    {
+        List<Type> list = new List<Type>();
+
+        foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+        {
+            var types = assembly.GetTypes()
+                .Where(type => typeof(ICarbonIntensityDataSource).IsAssignableFrom(type) && !type.IsInterface && !type.IsAbstract);
+            foreach (var type in types){
+                list.Add(type);
+            }
+        }
+
+        foreach (Type source in list)
+        {
+            var parameters = source.GetMethod("AdditionalParameters").Invoke(null, null);
+            Console.WriteLine(parameters);
+        }
+        var result = new string[] { "extended forecast" };
+        return result;
+    }
 
     public Dictionary<string, string> GetDisplayNameMap()
     {

@@ -13,6 +13,16 @@ builder.Services.AddControllers(options =>
 {
     options.Filters.Add<HttpResponseExceptionFilter>();
 });
+builder.Services.Configure<CarbonAwareVariablesConfiguration>(builder.Configuration.GetSection(CarbonAwareVariablesConfiguration.Key));
+builder.Services.AddCarbonAwareEmissionServices(builder.Configuration);
+CarbonAwareVariablesConfiguration config = new CarbonAwareVariablesConfiguration();
+
+builder.Configuration.GetSection(CarbonAwareVariablesConfiguration.Key).Bind(config);
+
+builder.Services.AddHealthChecks();
+
+builder.Services.AddMonitoringAndTelemetry(builder.Configuration);
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -27,15 +37,6 @@ builder.Services.AddSwaggerGen(c =>
     c.OperationFilter<CarbonAwareParametersBaseDtoOperationFilter>();
     c.SchemaFilter<CarbonAwareParametersBaseDtoSchemaFilter>();
 });
-builder.Services.Configure<CarbonAwareVariablesConfiguration>(builder.Configuration.GetSection(CarbonAwareVariablesConfiguration.Key));
-builder.Services.AddCarbonAwareEmissionServices(builder.Configuration);
-CarbonAwareVariablesConfiguration config = new CarbonAwareVariablesConfiguration();
-
-builder.Configuration.GetSection(CarbonAwareVariablesConfiguration.Key).Bind(config);
-
-builder.Services.AddHealthChecks();
-
-builder.Services.AddMonitoringAndTelemetry(builder.Configuration);
 
 var app = builder.Build();
 

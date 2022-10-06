@@ -25,7 +25,7 @@ var serviceProvider = new ServiceCollection()
 
 
 var rootCommand = new RootCommand(description: CommonLocalizableStrings.RootCommandDescription);
-rootCommand.AddCommand(new EmissionsCommand());
+rootCommand.AddCommand(new EmissionsCommand(config));
 rootCommand.AddCommand(new EmissionsForecastsCommand());
 
 var parser = new CommandLineBuilder(rootCommand)

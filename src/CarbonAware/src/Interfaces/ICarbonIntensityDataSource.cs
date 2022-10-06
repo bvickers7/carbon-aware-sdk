@@ -1,5 +1,11 @@
 ﻿namespace CarbonAware.Interfaces;
 
+public interface IAdditionalParameters
+{
+    public string[] GetParameters { get; }
+}
+
+
 /// <summary>
 /// Represents a data source for carbon intensity.
 /// </summary>
