@@ -8,15 +8,15 @@ using CarbonAware.Tools.WattTimeClient.Configuration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-Console.WriteLine("Hello, World!");
+Console.WriteLine("Hello, CarbonAware!");
 
 var key1 = $"{CarbonAwareVariablesConfiguration.Key}:CarbonIntensityDataSource";
 var key2 = $"{WattTimeClientConfiguration.Key}:Username";
 var key3 = $"{WattTimeClientConfiguration.Key}:Password";
 var settings = new Dictionary<string, string> {
             {key1, "WattTime"},
-            {key2, "zakimdevuser"},
-            {key3, "dcVdIGgYljp%26Qa%23&"}
+            {key2, "user"},
+            {key3, "passwd"}
         };
 var configuration = new ConfigurationBuilder()
         .AddInMemoryCollection(settings)
