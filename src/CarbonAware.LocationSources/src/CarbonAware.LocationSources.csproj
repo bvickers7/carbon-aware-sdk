@@ -16,4 +16,11 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+
+  <ItemGroup Label="FilesToCopy">
+   	<Content Include="CarbonAware.LocationSources.targets" PackagePath="build/CarbonAware.LocationSources.targets" />
+    <Content Include="$(ProjectDir)..\..\data\location-sources\**\*.json" Pack="true" PackagePath="location-sources\json\">
+      <PackageCopyToOutput>true</PackageCopyToOutput>
+    </Content>
+  </ItemGroup>
 </Project>

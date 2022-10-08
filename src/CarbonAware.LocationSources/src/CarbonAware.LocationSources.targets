@@ -1,0 +1,8 @@
+<Project>
+    <ItemGroup>
+        <LocationFiles Include="$(MSBuildThisFileDirectory)\..\location-sources\**\*.*" />
+    </ItemGroup>
+    <Target Name="CopyLocationFiles" BeforeTargets="Build">
+        <Copy SourceFiles="@(LocationFiles)" DestinationFolder="$(TargetDir)\location-sources\%(RecursiveDir)" />
+    </Target>
+</Project>
