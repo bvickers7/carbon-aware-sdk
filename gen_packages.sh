@@ -1,38 +1,43 @@
 #!/bin/bash
 set -x
 
-PREFIX="0.0.16"
+PREFIX="0.0.18"
 DEST_PACKAGES=/workspaces/ca_nuget_packages
 
-dotnet remove package CarbonAware
-dotnet remove package CarbonAware.LocationSources
-dotnet remove package CarbonAware.Aggregators
-dotnet remove package CarbonAware.Tools.WattTimeClient
-rm -rf ~/.nuget/packages/carbonaware*
-rm -rf bin obj
+# dotnet remove package CarbonAware
+# dotnet remove package CarbonAware.LocationSources
+# dotnet remove package CarbonAware.Aggregators
+# dotnet remove package CarbonAware.Tools.WattTimeClient
+# rm -rf ~/.nuget/packages/carbonaware*
+# rm -rf bin obj
 
-# Remove existing packages with the same PREFIX
+# Remove existing packages with PREFIX
 find $DEST_PACKAGES -name "*.nupkg" -exec rm {} \;
 # cd src
 dotnet pack ../src/CarbonAwareSDK.sln -o $DEST_PACKAGES \
     -p:VersionPrefix=$PREFIX \
     -p:VersionSuffix=beta \
+    -p:Authors="Microsoft" \
+    -p:Company="Microsoft" \
+    -p:Title="Green Software Foundation SDK" \
+    -p:PackageTags="Green-Software-Foundation GSF Microsoft" \
     -p:SourceRevisionId=c20572dccb64b3bd7e585ddbef8a4c68255d0dd8 \
-    -p:RepositoryUrl=https://github.com/microsoft/carbon-aware-sdk \
+    -p:RepositoryUrl="https://github.com/microsoft/carbon-aware-sdk" \
     -p:RepositoryType=git \
     -p:RepositoryBranch=dev \
-    -p:Description="Green Software Foundation SDK" \
+    -p:Description="Green Software Foundation SDK. Allows to get Carbon Emissions information from WattTime and ElectricityMap sources." \
     -p:PackageLicenseExpression=MIT
 
 # Local Feed
 # Create new dotnet project/console/lib, then add packages to the project as:
-dotnet add package CarbonAware -s $DEST_PACKAGES --prerelease
-dotnet add package CarbonAware.LocationSources -s $DEST_PACKAGES --prerelease
-dotnet add package CarbonAware.Aggregators -s  $DEST_PACKAGES --prerelease
-dotnet add package CarbonAware.Tools.WattTimeClient -s $DEST_PACKAGES --prerelease
+# dotnet add package CarbonAware -s $DEST_PACKAGES --prerelease
+# dotnet add package CarbonAware.LocationSources -s $DEST_PACKAGES --prerelease
+# dotnet add package CarbonAware.Aggregators -s  $DEST_PACKAGES --prerelease
+# dotnet add package CarbonAware.Tools.WattTimeClient -s $DEST_PACKAGES --prerelease
 
-dotnet build
-find . -name "*.json"
+# dotnet build
+# find . -name "*.json"
+# dotnet run
 # ....
 
 # Clean nuget packages (see more dotnet nuget locals -l all)
@@ -40,6 +45,7 @@ find . -name "*.json"
 
 # ISSUE: How to find the location files from the nuget package - DONE
 # ISSUE: How to pull dependency packages (Microsoft Packages) from CarbonAware.*
+# ISSUE: Each package could have its own description.
 # ISSUE: To have a very good dev starting guide on how to start
 # using the service extension to import the aggregator, how to pass 
 # configuration information (using envs, or using own configuration map)
