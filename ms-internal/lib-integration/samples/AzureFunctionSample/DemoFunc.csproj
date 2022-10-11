@@ -6,6 +6,7 @@
   <ItemGroup>
     <PackageReference Include="CarbonAware" Version="0.0.18-beta" />
     <PackageReference Include="CarbonAware.Aggregators" Version="0.0.18-beta" />
+    <PackageReference Include="CarbonAware.DataSources.Json" Version="0.0.18-beta" />
     <PackageReference Include="CarbonAware.LocationSources" Version="0.0.18-beta" />
     <PackageReference Include="CarbonAware.Tools.WattTimeClient" Version="0.0.18-beta" />
     <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />

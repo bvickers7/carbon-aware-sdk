@@ -2,19 +2,18 @@
 set -x
 
 PREFIX="0.0.18"
-DEST_PACKAGES=/workspaces/ca_nuget_packages
-
-# dotnet remove package CarbonAware
-# dotnet remove package CarbonAware.LocationSources
-# dotnet remove package CarbonAware.Aggregators
-# dotnet remove package CarbonAware.Tools.WattTimeClient
-# rm -rf ~/.nuget/packages/carbonaware*
-# rm -rf bin obj
+DEST_PACKAGES=$1
+if [[ -z $DEST_PACKAGES ]]
+then
+    printf "Missing parameter. Usage: $0 DEST_PACKAGES\n"
+    printf "Example: $0 /mypackages"
+    exit 1
+fi
 
 # Remove existing packages with PREFIX
+mkdir -p $DEST_PACKAGES
 find $DEST_PACKAGES -name "*.nupkg" -exec rm {} \;
-# cd src
-dotnet pack ../src/CarbonAwareSDK.sln -o $DEST_PACKAGES -c Debug \
+dotnet pack ../../../src/CarbonAwareSDK.sln -o $DEST_PACKAGES -c Debug \
     -p:VersionPrefix=$PREFIX \
     -p:VersionSuffix=beta \
     -p:Authors="Microsoft" \
@@ -28,28 +27,13 @@ dotnet pack ../src/CarbonAwareSDK.sln -o $DEST_PACKAGES -c Debug \
     -p:Description="Green Software Foundation SDK. Allows to get Carbon Emissions information from WattTime and ElectricityMap sources." \
     -p:PackageLicenseExpression=MIT
 
-# Local Feed
-# Create new dotnet project/console/lib, then add packages to the project as:
+# Add CarbonAware packages Local Feed to a new dotnet project
 # dotnet add package CarbonAware -s $DEST_PACKAGES --prerelease
 # dotnet add package CarbonAware.LocationSources -s $DEST_PACKAGES --prerelease
 # dotnet add package CarbonAware.Aggregators -s  $DEST_PACKAGES --prerelease
 # dotnet add package CarbonAware.Tools.WattTimeClient -s $DEST_PACKAGES --prerelease
 
-# dotnet build
-# find . -name "*.json"
-# dotnet run
-# ....
-
-# Clean nuget packages (see more dotnet nuget locals -l all)
-# dotnet nuget locals -c global-packages
-
-# ISSUE: How to find the location files from the nuget package - DONE
-# ISSUE: How to pull dependency packages (Microsoft Packages) from CarbonAware.*
 # ISSUE: Each package could have its own description.
-# ISSUE: Azure Function not loading json files: 
-#  System.Private.CoreLib: Could not find a part of the path '/workspaces/myfunc/bin/output/bin/data-sources/json/test-data-azure-emissions.json'.
-#  same for location source: Could not find a part of the path '/workspaces/myfunc/bin/output/bin/location-sources/json'.
-
 # ISSUE: To have a very good dev starting guide on how to start
 # using the service extension to import the aggregator, how to pass 
 # configuration information (using envs, or using own configuration map)

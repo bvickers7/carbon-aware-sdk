@@ -4,6 +4,7 @@
     </ItemGroup>
     <Target Name="CopyLocationFiles" BeforeTargets="Build">
         <Copy SourceFiles="@(LocationFiles)" DestinationFolder="$(TargetDir)\location-sources\%(RecursiveDir)" />
+        <!-- Copy to bin dir for Azure Functions to work -->
         <Copy SourceFiles="@(LocationFiles)" DestinationFolder="$(TargetDir)\bin\location-sources\%(RecursiveDir)" />
     </Target>
 </Project>
