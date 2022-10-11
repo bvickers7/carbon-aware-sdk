@@ -14,7 +14,7 @@ DEST_PACKAGES=/workspaces/ca_nuget_packages
 # Remove existing packages with PREFIX
 find $DEST_PACKAGES -name "*.nupkg" -exec rm {} \;
 # cd src
-dotnet pack ../src/CarbonAwareSDK.sln -o $DEST_PACKAGES \
+dotnet pack ../src/CarbonAwareSDK.sln -o $DEST_PACKAGES -c Debug \
     -p:VersionPrefix=$PREFIX \
     -p:VersionSuffix=beta \
     -p:Authors="Microsoft" \
@@ -46,6 +46,10 @@ dotnet pack ../src/CarbonAwareSDK.sln -o $DEST_PACKAGES \
 # ISSUE: How to find the location files from the nuget package - DONE
 # ISSUE: How to pull dependency packages (Microsoft Packages) from CarbonAware.*
 # ISSUE: Each package could have its own description.
+# ISSUE: Azure Function not loading json files: 
+#  System.Private.CoreLib: Could not find a part of the path '/workspaces/myfunc/bin/output/bin/data-sources/json/test-data-azure-emissions.json'.
+#  same for location source: Could not find a part of the path '/workspaces/myfunc/bin/output/bin/location-sources/json'.
+
 # ISSUE: To have a very good dev starting guide on how to start
 # using the service extension to import the aggregator, how to pass 
 # configuration information (using envs, or using own configuration map)
