@@ -11,7 +11,9 @@ then
     exit 1
 fi
 
-for file in `find $PACKAGE_DIR -name "CarbonAware*.nupkg"` 
+NUGET_ENDPOINT="https://apiint.nugettest.org/v3/index.json"
+
+for file in `find $PACKAGE_SRC -name "CarbonAware*.nupkg"` 
 do
-    dotnet nuget push $file --api-key $API_KEY --source https://apiint.nugettest.org/v3/index.json
+    dotnet nuget push $file --api-key $API_KEY --source $NUGET_ENDPOINT
 done
