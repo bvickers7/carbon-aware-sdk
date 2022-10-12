@@ -40,12 +40,12 @@ class EmissionsCommand : Command
             };
     public EmissionsCommand(IConfiguration configuration) : base("emissions", LocalizableStrings.EmissionsCommandDescription)
     {
-        var dataSourceConfig = configuration.GetSection(CarbonAwareVariablesConfiguration.Key).Get<CarbonAwareVariablesConfiguration>();
-        var datasource = dataSourceConfig.CarbonIntensityDataSource; //.GetValue("IEmissionDataSource");
-        foreach(var p in CarbonAwareParametersBaseDTO.AdditionalParameters(datasource))
-        {
-            AddOption(new Option<string?>($"--{p.Replace(' ', '-')}"));
-        }
+        // var dataSourceConfig = configuration.GetSection(CarbonAwareVariablesConfiguration.Key).Get<CarbonAwareVariablesConfiguration>();
+        // var datasource = dataSourceConfig.CarbonIntensityDataSource; //.GetValue("IEmissionDataSource");
+        // foreach(var p in CarbonAwareParametersBaseDTO.AdditionalParameters(datasource))
+        // {
+        //     AddOption(new Option<string?>($"--{p.Replace(' ', '-')}"));
+        // }
         AddOption(_requiredLocation);
         AddOption(_startTime);
         AddOption(_endTime);

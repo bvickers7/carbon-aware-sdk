@@ -17,8 +17,8 @@ var config = new ConfigurationBuilder()
 
 var serviceProvider = new ServiceCollection()
     .AddSingleton<IConfiguration>(config)
-    .Configure<CarbonAwareVariablesConfiguration>(
-        config.GetSection(CarbonAwareVariablesConfiguration.Key))
+    // .Configure<CarbonAwareVariablesConfiguration>(
+    //     config.GetSection(CarbonAwareVariablesConfiguration.Key))
     .AddCarbonAwareEmissionServices(config)
     .AddLogging(builder => builder.AddDebug())
     .BuildServiceProvider();
