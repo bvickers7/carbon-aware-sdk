@@ -1,5 +1,5 @@
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
-using CarbonAware.Aggregators.Configuration;
+using GSF.CarbonIntensity.Configuration;
 
 [assembly: FunctionsStartup(typeof(myfunc.Startup))]
 
@@ -10,7 +10,7 @@ namespace myfunc
         public override void Configure(IFunctionsHostBuilder builder)
         {
             var configuration = builder.GetContext().Configuration;
-            builder.Services.AddCarbonAwareEmissionServices(configuration);
+            builder.Services.AddCarbonIntensityServices(configuration);
         }
     }
 }

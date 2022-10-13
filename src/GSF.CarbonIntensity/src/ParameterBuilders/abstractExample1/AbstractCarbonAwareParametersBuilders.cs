@@ -18,17 +18,21 @@ public abstract class AbstractCarbonAwareParametersBuilder
 
     public abstract CarbonAwareParameters Build();
 
-    public void AddStartTime(DateTimeOffset start) {
+    public AbstractCarbonAwareParametersBuilder AddStartTime(DateTimeOffset start) {
         parameters.Start = start;
+        return this;
     }
-    public void AddEndTime(DateTimeOffset end) {
+    public AbstractCarbonAwareParametersBuilder AddEndTime(DateTimeOffset end) {
         parameters.End = end;
+        return this;
     }
-    public void AddLocations(string[] locs) {
+    public AbstractCarbonAwareParametersBuilder AddLocations(string[] locs) {
         locations = locs;
+        return this;
     }
 
-    public void AddDuration(int duration) {
+    public AbstractCarbonAwareParametersBuilder AddDuration(int duration) {
         parameters.Duration = duration;
+        return this;
     }
 }
