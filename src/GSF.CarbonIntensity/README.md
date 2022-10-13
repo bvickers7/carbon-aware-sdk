@@ -23,11 +23,14 @@ public record EmissionsData
 
 The following namespaces are considered:
 
-`GSF.CarbonIntensity.Exceptions`
-`GSF.CarbonIntensity.Configuration`
-`GSF.CarbonIntensity.Managers`
-`GSF.CarbonIntensity.Model`
-`GSF.CarbonIntensity.Parameters`
+| namespace   |
+| ----------- |
+| GSF.CarbonIntensity.Exceptions |
+| GSF.CarbonIntensity.Configuration |
+| GSF.CarbonIntensity.Managers |
+| GSF.CarbonIntensity.Model |
+| GSF.CarbonIntensity.Parameters |
+
 
 ## Features
 
