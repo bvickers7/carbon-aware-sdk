@@ -1,4 +1,4 @@
-namespace CarbonAware.Library.CarbonIntensity;
+namespace GSF.CarbonIntensity.Parameters;
 
 public class EmissionsParametersBuilder2 : AbstractCarbonAwareParametersBuilder2
 {

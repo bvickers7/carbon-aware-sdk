@@ -1,6 +1,6 @@
 using CarbonAware.Aggregators.CarbonAware;
 
-namespace CarbonAware.Library.CarbonIntensity;
+namespace GSF.CarbonIntensity.Parameters;
 
 /// <summary>
 /// Abstract class with children builder where children do validation at `Build()` call by overriding implementation

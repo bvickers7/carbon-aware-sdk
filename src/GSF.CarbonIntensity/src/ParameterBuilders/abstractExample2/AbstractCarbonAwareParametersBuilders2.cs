@@ -1,6 +1,6 @@
 using CarbonAware.Aggregators.CarbonAware;
 
-namespace CarbonAware.Library.CarbonIntensity;
+namespace GSF.CarbonIntensity.Parameters;
 
 /// <summary>
 /// Abstract class with children builder where certain functions are internal only and children expose specific functions to enforce valid inputs from the getgo

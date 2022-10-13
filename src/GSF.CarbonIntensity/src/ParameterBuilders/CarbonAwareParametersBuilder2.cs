@@ -1,20 +1,16 @@
 using CarbonAware.Aggregators.CarbonAware;
 
-namespace CarbonAware.Library.CarbonIntensity;
-
+namespace GSF.CarbonIntensity.Parameters;
 /// <summary>
-/// Single class builder that does field validation/setting when Build() is called based on instantiated ParameterType
+/// Single class builder that does field validation real-time as users try to set it based on instantiated ParameterType
 /// </summary>
-public class CarbonAwareParametersBuilder
+public class CarbonAwareParametersBuilder2
 {
     public enum ParameterType { EmissionsParameters, CurrentForecastParameters, ForecastParameters, CarbonIntensityParameters };
     private CarbonAwareParametersBaseDTO parameters;
     private ParameterType parameterType;
-    private bool locationsAreSet = false;
-    private string[]? locations;
 
-
-    public CarbonAwareParametersBuilder(ParameterType type) 
+    public CarbonAwareParametersBuilder2(ParameterType type) 
     {
         parameters = new CarbonAwareParametersBaseDTO();
         parameterType = type;
@@ -22,7 +18,6 @@ public class CarbonAwareParametersBuilder
 
     public CarbonAwareParameters Build() 
     {
-        ValidateParameterType();
         return parameters;
     }
     
@@ -32,23 +27,14 @@ public class CarbonAwareParametersBuilder
     public void AddEndTime(DateTimeOffset end) {
         parameters.End = end;
     }
-    public void AddLocations(string[] locs) {
-        locations = locs;
-        locationsAreSet = true;
-    }
-
-    public void AddDuration(int duration) {
-        parameters.Duration = duration;
-    }
-
-    private void ValidateParameterType()
+    public void AddLocations(string[] locations) 
     {
         switch(parameterType)
         {
             case ParameterType.EmissionsParameters:
             case ParameterType.CurrentForecastParameters:
             {
-                if (locationsAreSet)
+                if (locations.Any())
                 { 
                     parameters.MultipleLocations = locations;
                     break;
@@ -61,7 +47,7 @@ public class CarbonAwareParametersBuilder
             case ParameterType.ForecastParameters:
             case ParameterType.CarbonIntensityParameters:
             {
-                if (locations != null)
+                if (locations.Any())
                 { 
                     if (locations.Count() == 1) {
                         parameters.SingleLocation = locations[0];
@@ -77,5 +63,9 @@ public class CarbonAwareParametersBuilder
                 }
             }
         }
+    }
+
+    public void AddDuration(int duration) {
+        parameters.Duration = duration;
     }
 }

@@ -1,6 +1,6 @@
 using CarbonAware.Aggregators.CarbonAware;
 
-namespace CarbonAware.Library.CarbonIntensity;
+namespace GSF.CarbonIntensity.Parameters;
 
 public class CarbonIntensityParametersBuilder : AbstractCarbonAwareParametersBuilder
 {
