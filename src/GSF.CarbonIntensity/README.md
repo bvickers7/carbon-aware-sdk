@@ -1,6 +1,6 @@
 # Library design consideration
 
-This document helps to clarify some of the decisions taken with regards GSF CarbonAware SDK library.
+This document helps to have some concepts about how GSF CarbonAware SDK lib is designed.
 
 ## Namespace
 
