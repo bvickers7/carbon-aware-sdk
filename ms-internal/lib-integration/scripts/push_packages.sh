@@ -1,5 +1,6 @@
 #!/bin/bash
 ## Upload CarbonAware nuget packages to https://int.nugettest.org/
+## Sign in into https://int.nugettest.org/ to get an API_KEY
 set -x
 
 PACKAGE_SRC=$1
@@ -13,7 +14,7 @@ fi
 
 NUGET_ENDPOINT="https://apiint.nugettest.org/v3/index.json"
 
-for file in `find $PACKAGE_SRC -name "CarbonAware*.nupkg"` 
+for file in `find $PACKAGE_SRC -name "*.nupkg"` 
 do
    dotnet nuget push $file --api-key $API_KEY --source $NUGET_ENDPOINT
 done

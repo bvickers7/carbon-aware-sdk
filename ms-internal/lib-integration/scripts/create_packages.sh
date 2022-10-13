@@ -13,7 +13,8 @@ fi
 # Remove existing packages with PREFIX
 mkdir -p $DEST_PACKAGES
 find $DEST_PACKAGES -name "*.nupkg" -exec rm {} \;
-dotnet pack ../../../src/CarbonAwareSDK.sln -o $DEST_PACKAGES -c Debug \
+DOTNET_SOLUTION="../../../src/CarbonAwareSDK.sln"
+dotnet pack $DOTNET_SOLUTION -o $DEST_PACKAGES -c Debug \
     -p:VersionPrefix=$PREFIX \
     -p:VersionSuffix=beta \
     -p:Authors="Microsoft" \
@@ -27,11 +28,6 @@ dotnet pack ../../../src/CarbonAwareSDK.sln -o $DEST_PACKAGES -c Debug \
     -p:Description="Green Software Foundation SDK. Allows to get Carbon Emissions information from WattTime and ElectricityMap sources." \
     -p:PackageLicenseExpression=MIT
 
-# Add CarbonAware packages Local Feed to a new dotnet project
-# dotnet add package CarbonAware -s $DEST_PACKAGES --prerelease
-# dotnet add package CarbonAware.LocationSources -s $DEST_PACKAGES --prerelease
-# dotnet add package CarbonAware.Aggregators -s  $DEST_PACKAGES --prerelease
-# dotnet add package CarbonAware.Tools.WattTimeClient -s $DEST_PACKAGES --prerelease
 
 # ISSUE: Each package could have its own description.
 # ISSUE: To have a very good dev starting guide on how to start
