@@ -14,6 +14,7 @@ env:
   PREFIX: "0.0.9"
   DOTNET_SOLUTION: "./src/CarbonAwareSDK.sln"
   OUTPUT_DIR: "packages"
+  CONSOLE_APP: "./ms-internal/lib-integration/samples/ConsoleAppSample/ConsoleAppSample.csproj"
 
 jobs:
   dotnet-pack:
@@ -45,11 +46,12 @@ jobs:
             -p:RepositoryBranch=dev \
             -p:Description="Green Software Foundation SDK. Allows to get Carbon Emissions information from WattTime and ElectricityMap sources." \
             -p:PackageLicenseExpression=MIT
-      - name: Create demo Console App
-        run: dotnet new console -n DemoApp
-      - name: Add Packages
-        run: dotnet add DemoApp/DemoApp.csproj package GSF.CarbonIntensity -s ${{ env.OUTPUT_DIR }} --prerelease
-      - name: Build demo app
-        run: dotnet build DemoApp/DemoApp.csproj
+      - name: Add packages to ConsoleAppSample
+        run: dotnet add ${{ env.CONSOLE_APP }} package GSF.CarbonIntensity -s ${{ env.OUTPUT_DIR }} --prerelease
+      - name: Build ConsoleAppSample
+        run: dotnet build ${{ env.CONSOLE_APP }}
+      - name: Run ConsoleAppSample
+        run: dotnet run --project ${{ env.CONSOLE_APP }}
+
 
 
