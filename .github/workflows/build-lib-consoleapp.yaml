@@ -2,9 +2,9 @@ name: Build Packages Install Packages on ConsoleAppSample
 
 on:
   push:
-    branches: [ juzuluag/enh_ci_for_lib ]
+    branches: [ juzuluag/proto_facade ]
   pull_request:
-    branches: [ juzuluag/enh_ci_for_lib ]
+    branches: [ juzuluag/proto_facade ]
     paths:
       - 'src/**'
       - '.github/workflows/**'
