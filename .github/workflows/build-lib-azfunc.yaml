@@ -47,7 +47,7 @@ jobs:
             -p:Description="Green Software Foundation SDK. Allows to get Carbon Emissions information from WattTime and ElectricityMap sources." \
             -p:PackageLicenseExpression=MIT
 
-      -name: Restore current packages for ConsoleAppSample
+      - name: Restore current packages for ConsoleAppSample
         run: dotnet restore {{ env.CONSOLE_APP }}
 
       - name: Add packages to ConsoleAppSample
