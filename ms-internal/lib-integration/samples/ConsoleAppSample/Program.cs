@@ -5,12 +5,12 @@ using Microsoft.Extensions.DependencyInjection;
 
 Console.WriteLine("Hello, ConsoleAppSample!");
 
-var key1 = $"{CarbonAwareVariablesConfiguration.Key}:CarbonIntensityDataSource";
-var settings = new Dictionary<string, string> {
-            {key1, "JSON"}
-        };
+// var key1 = $"{CarbonAwareVariablesConfiguration.Key}:CarbonIntensityDataSource";
+// var settings = new Dictionary<string, string> {
+//             {key1, "JSON"}
+//         };
 var configuration = new ConfigurationBuilder()
-        .AddInMemoryCollection(settings)
+        // .AddInMemoryCollection(settings)
         .Build();
 
 var serviceCollection = new ServiceCollection();

@@ -53,6 +53,9 @@ jobs:
       - name: Add packages to ConsoleAppSample
         run: dotnet add ${{ env.CONSOLE_APP }} package GSF.CarbonIntensity -s ${{ env.OUTPUT_DIR }} --prerelease
 
+      - name: Restore packages after Add to ConsoleAppSample
+        run: dotnet restore ${{ env.CONSOLE_APP }}
+
       - name: Build ConsoleAppSample
         run: dotnet build ${{ env.CONSOLE_APP }}
 
