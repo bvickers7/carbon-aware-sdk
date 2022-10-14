@@ -1,16 +1,12 @@
-﻿using GSF.CarbonIntensity.Handlers;
+﻿using GSF.CarbonIntensity.Configuration;
+using GSF.CarbonIntensity.Handlers;
 using GSF.CarbonIntensity.Parameters;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 Console.WriteLine("Hello, ConsoleAppSample!");
 
-// var key1 = $"{CarbonAwareVariablesConfiguration.Key}:CarbonIntensityDataSource";
-// var settings = new Dictionary<string, string> {
-//             {key1, "JSON"}
-//         };
 var configuration = new ConfigurationBuilder()
-        // .AddInMemoryCollection(settings)
         .Build();
 
 var serviceCollection = new ServiceCollection();
