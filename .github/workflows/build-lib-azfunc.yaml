@@ -1,4 +1,4 @@
-name: Build Packages Install Packages on AzFunc
+name: Build Packages Install Packages on ConsoleAppSample
 
 on:
   push:
@@ -10,7 +10,6 @@ on:
       - '.github/workflows/**'
 
 env:
-  DOTNET_SRC_DIR: "./src"
   PREFIX: "0.0.9"
   DOTNET_SOLUTION: "./src/CarbonAwareSDK.sln"
   OUTPUT_DIR: "packages"
@@ -54,11 +53,6 @@ jobs:
         run: |
           declare -a packages=(
             "GSF.CarbonIntensity"
-            "CarbonAware"
-            "CarbonAware.DataSources.Json"
-            "CarbonAware.LocationSources"
-            "CarbonAware.Aggregators"
-            "CarbonAware.Tools.WattTimeClient"
           )
           for pname in "${packages[@]}"
           do
@@ -73,6 +67,3 @@ jobs:
 
       - name: Run ConsoleAppSample
         run: dotnet run --project ${{ env.CONSOLE_APP }}
-
-
-
