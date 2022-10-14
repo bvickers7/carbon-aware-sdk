@@ -46,10 +46,16 @@ jobs:
             -p:RepositoryBranch=dev \
             -p:Description="Green Software Foundation SDK. Allows to get Carbon Emissions information from WattTime and ElectricityMap sources." \
             -p:PackageLicenseExpression=MIT
+
+      -name: Restore current packages for ConsoleAppSample
+        run: dotnet restore {{ env.CONSOLE_APP }}
+
       - name: Add packages to ConsoleAppSample
         run: dotnet add ${{ env.CONSOLE_APP }} package GSF.CarbonIntensity -s ${{ env.OUTPUT_DIR }} --prerelease
+
       - name: Build ConsoleAppSample
         run: dotnet build ${{ env.CONSOLE_APP }}
+
       - name: Run ConsoleAppSample
         run: dotnet run --project ${{ env.CONSOLE_APP }}
 
