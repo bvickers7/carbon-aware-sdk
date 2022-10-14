@@ -12,9 +12,11 @@ on:
 env:
   DOTNET_SRC_DIR: "./src"
   PREFIX: "0.0.9"
+  DOTNET_SOLUTION: "./src/CarbonAwareSDK.sln"
+  OUTPUT_DIR: "packages"
 
 jobs:
-  dotnet-build:
+  dotnet-pack:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -26,9 +28,11 @@ jobs:
           dotnet-version: '6.0.x'
           include-prerelease: false
 
+      - name: Make package dir
+        run: mkdir -p ${{ env.OUTPUT_DIR }}
       - name: Pack
         run: |
-          dotnet pack ./src/CarbonAwareSDK.sln -o . -c Release \
+          dotnet pack ${{ env.DOTNET_SOLUTION }} -o ${{ env.OUTPUT_DIR }} -c Release \
             -p:VersionPrefix=${{ env.PREFIX }} \
             -p:VersionSuffix=beta \
             -p:Authors="Microsoft" \
@@ -41,4 +45,6 @@ jobs:
             -p:RepositoryBranch=dev \
             -p:Description="Green Software Foundation SDK. Allows to get Carbon Emissions information from WattTime and ElectricityMap sources." \
             -p:PackageLicenseExpression=MIT
+      - name: List packages
+        run: ls -l ${{ env.OUTPUT_DIR }}
 
