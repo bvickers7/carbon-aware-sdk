@@ -53,6 +53,11 @@ jobs:
         run: |
           declare -a packages=(
             "GSF.CarbonIntensity"
+            "CarbonAware"
+            "CarbonAware.DataSources.Json"
+            "CarbonAware.LocationSources"
+            "CarbonAware.Aggregators"
+            "CarbonAware.Tools.WattTimeClient"
           )
           for pname in "${packages[@]}"
           do
