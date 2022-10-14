@@ -2,14 +2,14 @@ using CarbonAware.Aggregators.CarbonAware;
 using GSF.CarbonIntensity.Model;
 using Microsoft.Extensions.Logging;
 
-namespace GSF.CarbonIntensity.Managers;
+namespace GSF.CarbonIntensity.Handlers;
 
-internal class EmissionsManager : IEmissionsManager
+internal class EmissionsHandler : IEmissionsHandler
 {
     private readonly ICarbonAwareAggregator _aggregator;
-    private readonly ILogger<EmissionsManager> _logger;
+    private readonly ILogger<EmissionsHandler> _logger;
 
-    public EmissionsManager(ICarbonAwareAggregator aggregator, ILogger<EmissionsManager> logger)
+    public EmissionsHandler(ICarbonAwareAggregator aggregator, ILogger<EmissionsHandler> logger)
     {
         _aggregator = aggregator;
         _logger = logger;

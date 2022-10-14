@@ -1,9 +1,9 @@
 using CarbonAware.Aggregators.CarbonAware;
 using GSF.CarbonIntensity.Model;
 
-namespace GSF.CarbonIntensity.Managers;
+namespace GSF.CarbonIntensity.Handlers;
 
-public interface IEmissionsManager
+public interface IEmissionsHandler
 {
     /// <summary>
     /// Return Carbon Intensity Rating

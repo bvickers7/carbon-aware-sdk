@@ -1,14 +1,14 @@
-# Library design consideration
+# Library design considerations
 
-This document helps to have some concepts about how GSF CarbonAware SDK lib is designed.
+This document helps to have the concept on how GSF CarbonAware SDK lib was conceived. 
 
 ## Namespace
 
-Given the fact this is going to be a library exposing functionality to consumers, it is [recommended](https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/names-of-namespaces) to use the following naming schema: `<Company>.(<Product>|<Technology>)[.<Feature>][.<Subnamespace>]`. For GSF CarbonAware SDK, the following schema is proposed:
+Given the fact this is going to be a library exposing functionality to consumers, it is [recommended](https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/names-of-namespaces) to use the following namespace naming schema: `<Company>.(<Product>|<Technology>)[.<Feature>][.<Subnamespace>]`. For GSF CarbonAware SDK this the following schema:
 
-- ***Company***: **GSF**
-- ***Product***: **CarbonIntensity**
-- ***Feature***: **Model**, **Managers**, ...
+- **Company**: ***GSF***
+- **Product**: ***CarbonIntensity***
+- **Feature**: ***Model***, ***Handlers***, ...
 
 An example of a namespace would be: `namespace GSF.CarbonIntensity.Model` and a class (record, interface, ...) that belongs to that namespace would be:
 
@@ -27,7 +27,7 @@ The following namespaces are considered:
 | ----------- |
 | GSF.CarbonIntensity.Exceptions |
 | GSF.CarbonIntensity.Configuration |
-| GSF.CarbonIntensity.Managers |
+| GSF.CarbonIntensity.Handlers |
 | GSF.CarbonIntensity.Model |
 | GSF.CarbonIntensity.Parameters |
 
@@ -36,21 +36,21 @@ The following namespaces are considered:
 
 ### Model
 
-There are two main classes that represents the data fetched from the datasources (i.e `Static Json`, `WattTime` and `ElectricityMap`):
+There are two main classes that represents the data fetched from the datasources (i.e `Static Json`, [WattTime](https://www.watttime.org) and [ElectricityMap](https://www.electricitymaps.com)):
 
 - `EmissionsData`
 - `EmissionsForecast`
 
-These would be provided by the **Managers** as return types driven by a **Parameters** class that the consumer will instantiate using a **builder helper** class.
+These would be provided by the **Handlers** as return types driven by a **Parameters** class that the consumer will instantiate using a **builder helper** class.
 
-### Managers
+### Handlers
 
-There would be two managers for each of the data types returned:
+There would be two handlers for each of the data types returned:
 
-- `EmissionsManager`
-- `ForecastManager`
+- `EmissionsHandler`
+- `ForecastHandler`
 
-Each would be responsible of interacting on its own domain. For instance `EmissionsManager` would have a method `GetEmissionsDataAsync` to pull `EmissionsData` instances from a configured data source.
+Each would be responsible of interacting on its own domain. For instance `EmissionsHandler` would have a method `GetEmissionsDataAsync` to pull `EmissionsData` instances from a configured data source.
 (Note: The current core implementation is using `async/await` paradigm, which would be the default for GSF SDK library too).
 
 ### Parameters

@@ -1,5 +1,5 @@
 using CarbonAware.Aggregators.Configuration;
-using GSF.CarbonIntensity.Managers;
+using GSF.CarbonIntensity.Handlers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -14,7 +14,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddCarbonIntensityServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddCarbonAwareEmissionServices(configuration)
-                .TryAddSingleton<IEmissionsManager, EmissionsManager>();
+                .TryAddSingleton<IEmissionsHandler, EmissionsHandler>();
         return services;
     }
 }
