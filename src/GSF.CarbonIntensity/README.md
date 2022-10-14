@@ -70,11 +70,11 @@ Using C# practices on how to register services, the library would be available t
 services.AddCarbonIntensityServices(configuration);
 ```
 ```c#
-// An application Consumer construct should inject a GSF manager like the following example
-public class ConsumerApp(IEmissionsManager manager, ILogger<ConsumerApp> logger)
+// An application Consumer construct should inject a GSF handler like the following example
+public class ConsumerApp(IEmissionsHandler handler, ILogger<ConsumerApp> logger)
 {
     ....
-    this._manager = manager;
+    this._handler = handler;
     this._logger = logger;
     ....
 }
@@ -82,7 +82,7 @@ public class ConsumerApp(IEmissionsManager manager, ILogger<ConsumerApp> logger)
 public Task<double> GetRating()
 {
     ....
-    return await this._manager.GetEmissionsDataAsync(...).Rating;
+    return await this._handler.GetEmissionsDataAsync(...).Rating;
 }
 ```
 
