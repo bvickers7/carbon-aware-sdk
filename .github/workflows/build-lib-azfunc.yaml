@@ -45,6 +45,11 @@ jobs:
             -p:RepositoryBranch=dev \
             -p:Description="Green Software Foundation SDK. Allows to get Carbon Emissions information from WattTime and ElectricityMap sources." \
             -p:PackageLicenseExpression=MIT
-      - name: List packages
-        run: ls -l ${{ env.OUTPUT_DIR }}
+      - name: Create demo Console App
+        run: dotnet new console -n DemoApp
+      - name: Add Packages
+        run: dotnet add DemoApp/DemoApp.csproj package GSF.CarbonIntensity -s ${{ env.OUTPUT_DIR }} --prerelease
+      - name: Build demo app
+        run: dotnet build DemoApp/DemoApp.csproj
+
 
