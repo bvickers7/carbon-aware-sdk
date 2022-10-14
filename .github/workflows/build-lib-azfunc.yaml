@@ -51,7 +51,19 @@ jobs:
         run: dotnet restore ${{ env.CONSOLE_APP }}
 
       - name: Add packages to ConsoleAppSample
-        run: dotnet add ${{ env.CONSOLE_APP }} package GSF.CarbonIntensity -s ${{ env.OUTPUT_DIR }} --prerelease
+        run: |
+          declare -a packages=(
+            "GSF.CarbonIntensity"
+            "CarbonAware"
+            "CarbonAware.DataSources.Json"
+            "CarbonAware.LocationSources"
+            "CarbonAware.Aggregators"
+            "CarbonAware.Tools.WattTimeClient"
+          )
+          for pname in "${packages[@]}"
+          do
+            dotnet add ${{ env.CONSOLE_APP }} package $pname -s  ${{ env.OUTPUT_DIR }} --prerelease
+          done
 
       - name: Restore packages after Add to ConsoleAppSample
         run: dotnet restore ${{ env.CONSOLE_APP }}
