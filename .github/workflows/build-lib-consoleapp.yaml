@@ -8,6 +8,7 @@ on:
     paths:
       - 'src/**'
       - '.github/workflows/**'
+      - 'ms-internal/lib-integration/samples/**'
 
 env:
   PREFIX: "0.0.9"
@@ -61,7 +62,7 @@ jobs:
           )
           for pname in "${packages[@]}"
           do
-            dotnet add ${{ env.CONSOLE_APP }} package $pname -s  ${{ env.OUTPUT_DIR }} --prerelease
+            dotnet add ${{ env.CONSOLE_APP }} package $pname -s ${{ env.OUTPUT_DIR }} --prerelease
           done
 
       - name: Restore packages after Add to ConsoleAppSample
