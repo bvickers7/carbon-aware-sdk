@@ -1,0 +1,44 @@
+name: Build Packages Install Packages on AzFunc
+
+on:
+  push:
+    branches: [ juzuluag/enh_ci_for_lib ]
+  pull_request:
+    branches: [ juzuluag/enh_ci_for_lib ]
+    paths:
+      - 'src/**'
+      - '.github/workflows/**'
+
+env:
+  DOTNET_SRC_DIR: "./src"
+  PREFIX: "0.0.9"
+
+jobs:
+  dotnet-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      - name: Setup .NET Core SDK 6
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: '6.0.x'
+          include-prerelease: false
+
+      - name: Pack
+        run: \
+          dotnet pack ./src/CarbonAwareSDK.sln -o . -c Release \
+            -p:VersionPrefix=${{ env.PREFIX }} \
+            -p:VersionSuffix=beta \
+            -p:Authors="Microsoft" \
+            -p:Company="Microsoft" \
+            -p:Title="Green Software Foundation SDK" \
+            -p:PackageTags="Green-Software-Foundation GSF Microsoft" \
+            -p:SourceRevisionId=c20572dccb64b3bd7e585ddbef8a4c68255d0dd8 \
+            -p:RepositoryUrl="https://github.com/microsoft/carbon-aware-sdk" \
+            -p:RepositoryType=git \
+            -p:RepositoryBranch=dev \
+            -p:Description="Green Software Foundation SDK. Allows to get Carbon Emissions information from WattTime and ElectricityMap sources." \
+            -p:PackageLicenseExpression=MIT
+
