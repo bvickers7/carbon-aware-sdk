@@ -27,7 +27,7 @@ jobs:
           include-prerelease: false
 
       - name: Pack
-        run: \
+        run: |
           dotnet pack ./src/CarbonAwareSDK.sln -o . -c Release \
             -p:VersionPrefix=${{ env.PREFIX }} \
             -p:VersionSuffix=beta \
