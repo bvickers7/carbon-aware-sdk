@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup Label="FilesToCopy">
-   	<Content Include="CarbonAware.DataSources.Json.targets" PackagePath="build/CarbonAware.DataSources.Json.targets" />
+   	<Content Include="$(AssemblyName).targets" PackagePath="build/$(AssemblyName).targets" />
     <Content Include="$(ProjectDir)..\..\..\data\data-files\**\*.json" Pack="true" PackagePath="data-sources\json\">
       <PackageCopyToOutput>true</PackageCopyToOutput>
     </Content>

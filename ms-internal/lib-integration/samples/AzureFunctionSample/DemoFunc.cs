@@ -1,12 +1,10 @@
 using System;
-using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using GSF.CarbonIntensity.Managers;
 using GSF.CarbonIntensity.Parameters;
 
@@ -36,7 +34,7 @@ namespace myfunc
                 .AddEndTime(DateTimeOffset.Parse(endDate))
                 .Build();
 
-            var result = await _manager.GetRateAsync(param);
+            var result = await _manager.GetRatingAsync(param);
             var responseMessage = $"For location {location} Starting at: {startDate} Ending at: {endDate} the Carbon Emissions Rating is: {result}.";
 
             return new OkObjectResult(responseMessage);

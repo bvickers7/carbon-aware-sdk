@@ -1,7 +1,7 @@
 #!/bin/bash
 set -x
 
-PREFIX="0.0.19"
+PREFIX="0.0.20"
 DEST_PACKAGES=$1
 if [[ -z $DEST_PACKAGES ]]
 then

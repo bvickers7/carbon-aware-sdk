@@ -6,9 +6,10 @@ namespace GSF.CarbonIntensity.Managers;
 public interface IEmissionsManager
 {
     /// <summary>
-    /// Return Carbon Intensity Rate
+    /// Return Carbon Intensity Rating
     /// </summary>
-    Task<double> GetRateAsync(CarbonAwareParameters parameter);
+    // TODO. Need to 'hide' from the manager interface, all access to the Aggregator
+    Task<double> GetRatingAsync(CarbonAwareParameters parameter);
 
     /// <summary>
     /// Return the lowest EmissionsData

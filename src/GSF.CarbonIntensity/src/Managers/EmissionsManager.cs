@@ -21,7 +21,7 @@ internal class EmissionsManager : IEmissionsManager
         return await Task.FromResult(new EmissionsData());
     }
 
-    public async Task<double> GetRateAsync(CarbonAwareParameters parameter)
+    public async Task<double> GetRatingAsync(CarbonAwareParameters parameter)
     {
         var emissions = await _aggregator.GetEmissionsDataAsync(parameter);
         _logger.LogInformation($"Returning first rate out of {emissions.Count()}");
