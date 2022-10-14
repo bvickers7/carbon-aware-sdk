@@ -10,8 +10,9 @@ var configuration = new ConfigurationBuilder()
         .Build();
 
 var serviceCollection = new ServiceCollection();
-serviceCollection.AddCarbonIntensityServices(configuration);
-var serviceProvider = serviceCollection.BuildServiceProvider();
+var serviceProvider = serviceCollection.AddLogging()
+    .AddCarbonIntensityServices(configuration)
+    .BuildServiceProvider();
 var handler = serviceProvider.GetRequiredService<IEmissionsHandler>();
 
 const string startDate = "2022-03-01T15:30:00Z";
