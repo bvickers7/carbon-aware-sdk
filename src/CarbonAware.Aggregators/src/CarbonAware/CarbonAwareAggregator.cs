@@ -3,8 +3,8 @@ using CarbonAware.Interfaces;
 using CarbonAware.Model;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
-using PropertyName = CarbonAware.Aggregators.CarbonAware.CarbonAwareParameters.PropertyName;
-using ValidationName = CarbonAware.Aggregators.CarbonAware.CarbonAwareParameters.ValidationName;
+using Validators = CarbonAware.Aggregators.CarbonAware.ParametersValidator;
+
 
 namespace CarbonAware.Aggregators.CarbonAware;
 
@@ -29,9 +29,8 @@ public class CarbonAwareAggregator : ICarbonAwareAggregator
     public async Task<IEnumerable<EmissionsData>> GetEmissionsDataAsync(CarbonAwareParameters parameters)
     {
         using (var activity = Activity.StartActivity())
-        {         
-            parameters.SetRequiredProperties(PropertyName.MultipleLocations);
-            parameters.SetValidations(ValidationName.StartRequiredIfEnd);
+        {
+            parameters.SetupValidator(CarbonAwareParameters.ParameterType.EmissionsParameters);
             parameters.Validate();
 
             var locations = parameters.MultipleLocations;
@@ -45,8 +44,7 @@ public class CarbonAwareAggregator : ICarbonAwareAggregator
     /// <inheritdoc />
     public async Task<IEnumerable<EmissionsData>> GetBestEmissionsDataAsync(CarbonAwareParameters parameters)
     {
-        parameters.SetRequiredProperties(PropertyName.MultipleLocations);
-        parameters.SetValidations(ValidationName.StartRequiredIfEnd);
+        parameters.SetupValidator(CarbonAwareParameters.ParameterType.EmissionsParameters);
         parameters.Validate();
 
         var locations = parameters.MultipleLocations;
@@ -62,8 +60,9 @@ public class CarbonAwareAggregator : ICarbonAwareAggregator
     {
         using (var activity = Activity.StartActivity())
         {
-            parameters.SetRequiredProperties(PropertyName.MultipleLocations);
+            parameters.SetupValidator(CarbonAwareParameters.ParameterType.CurrentForecastParameters);
             parameters.Validate();
+
             var forecasts = new List<EmissionsForecast>();
             foreach (var location in parameters.MultipleLocations)
             {
@@ -81,7 +80,7 @@ public class CarbonAwareAggregator : ICarbonAwareAggregator
     {
         using (var activity = Activity.StartActivity())
         {
-            parameters.SetRequiredProperties(PropertyName.SingleLocation, PropertyName.Start, PropertyName.End);
+            parameters.SetupValidator(CarbonAwareParameters.ParameterType.CarbonIntensityParameters);
             parameters.Validate();
 
             var end = parameters.End;
@@ -101,7 +100,7 @@ public class CarbonAwareAggregator : ICarbonAwareAggregator
         EmissionsForecast forecast;
         using (var activity = Activity.StartActivity())
         {
-            parameters.SetRequiredProperties(PropertyName.SingleLocation, PropertyName.Requested);
+            parameters.SetupValidator(CarbonAwareParameters.ParameterType.ForecastParameters);
             parameters.Validate();
 
             forecast = await this._dataSource.GetCarbonIntensityForecastAsync(parameters.SingleLocation, parameters.Requested);

@@ -10,9 +10,7 @@ using Moq;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Net;
-using System.Text.Json;
 using System.Threading.Tasks;
-using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 
 /// <summary>
 /// Tests that the Web API controller handles and packages various responses from a plugin properly 

@@ -7,11 +7,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 using PropertyName = CarbonAware.Aggregators.CarbonAware.CarbonAwareParameters.PropertyName;
+using ValidationName = CarbonAware.Aggregators.CarbonAware.ParametersValidator.ValidationName;
 
 namespace CarbonAware.Aggregators.Tests;
 
 [TestFixture]
-public class CarbonAwareParametersTests
+public class CarbonAwareCarbonAwareParametersTests
 {
     public const string RENAMED_MULTIPLE_LOCATIONS_PROPERTY = "myTestLocations";
     public const string RENAMED_START_PROPERTY = "myTestStartAt";
@@ -35,7 +36,7 @@ public class CarbonAwareParametersTests
         var parameters = new CarbonAwareParameters();
 
         // Act
-        parameters.SetRequiredProperties(Array.Empty<PropertyName>());
+        parameters.Validator.SetRequiredProperties(Array.Empty<PropertyName>());
 
         // Assert
         foreach (var propertyName in CarbonAwareParameters.GetPropertyNames())
@@ -51,7 +52,7 @@ public class CarbonAwareParametersTests
         var parameters = new CarbonAwareParameters();
 
         // Act
-        parameters.SetRequiredProperties(PropertyName.MultipleLocations, PropertyName.Start);
+        parameters.Validator.SetRequiredProperties(PropertyName.MultipleLocations, PropertyName.Start);
 
         // Assert
         Assert.IsTrue(parameters._props[PropertyName.MultipleLocations].IsRequired);
@@ -73,7 +74,7 @@ public class CarbonAwareParametersTests
         foreach (var name in propertyNames)
         {
             parameters._props[name].IsSet = true;
-            parameters.SetRequiredProperties(name);
+            parameters.Validator.SetRequiredProperties(name);
         }
         // Act & Assert
         parameters.Validate();
@@ -84,7 +85,7 @@ public class CarbonAwareParametersTests
     {
         // Arrange
         var parameters = new CarbonAwareParameters();
-        parameters.SetRequiredProperties(PropertyName.Start);
+        parameters.Validator.SetRequiredProperties(PropertyName.Start);
 
         // Act & Assert
         Assert.Throws<ArgumentException>(() => parameters.Validate());
@@ -99,7 +100,7 @@ public class CarbonAwareParametersTests
             MultipleLocations = Enumerable.Empty<Location>(),
         };
 
-        parameters.SetRequiredProperties(PropertyName.MultipleLocations);
+        parameters.Validator.SetRequiredProperties(PropertyName.MultipleLocations);
 
         // Act & Assert
         Assert.Throws<ArgumentException>(() => parameters.Validate());
@@ -114,7 +115,8 @@ public class CarbonAwareParametersTests
             Start = new DateTimeOffset(2022, 1, 5, 12, 0, 0, TimeSpan.Zero),
             End = new DateTimeOffset(2022, 1, 1, 12, 0, 0, TimeSpan.Zero),
         };
-        parameters.SetRequiredProperties(new PropertyName[] { PropertyName.Start, PropertyName.End });
+        parameters.Validator.SetRequiredProperties(new PropertyName[] { PropertyName.Start, PropertyName.End });
+        parameters.Validator.SetValidations(ValidationName.StartBeforeEnd);
 
         // Assert
         Assert.Throws<ArgumentException>(() => parameters.Validate());
@@ -129,7 +131,7 @@ public class CarbonAwareParametersTests
             Start = new DateTimeOffset(2022, 1, 1, 12, 0, 0, TimeSpan.Zero),
             End = new DateTimeOffset(2022, 1, 5, 12, 0, 0, TimeSpan.Zero),
         };
-        parameters.SetRequiredProperties(new PropertyName[] { PropertyName.Start, PropertyName.End });
+        parameters.Validator.SetRequiredProperties(new PropertyName[] { PropertyName.Start, PropertyName.End });
 
         // Act
         parameters.Validate();
@@ -220,7 +222,7 @@ public class CarbonAwareParametersTests
         var enumPropertyNames = Enum.GetNames<PropertyName>();
 
         // Assert
-        CollectionAssert.AreEquivalent(enumPropertyNames, dtoClassPropertyNames, "CarbonAwareParametersBaseDTO class properties do not match expected enums");
-        CollectionAssert.AreEquivalent(enumPropertyNames, modelClassPropertyNames, "CarbonAwareParameters class properties do not match expected enums");
+        CollectionAssert.AreEquivalent(enumPropertyNames, dtoClassPropertyNames, "CarbonAwareCarbonAwareParametersBaseDTO class properties do not match expected enums");
+        CollectionAssert.AreEquivalent(enumPropertyNames, modelClassPropertyNames, "CarbonAwareCarbonAwareParameters class properties do not match expected enums");
     }
 }

@@ -24,7 +24,7 @@ public abstract class TestsBase
         aggregator.Setup(x => x.GetEmissionsDataAsync(It.IsAny<CarbonAwareParameters>()))
             .Callback((CarbonAwareParameters parameters) =>
             {
-                parameters.SetRequiredProperties(PropertyName.MultipleLocations);
+                parameters.Validator.SetRequiredProperties(PropertyName.MultipleLocations);
                 parameters.Validate();
             })
             .ReturnsAsync(data);
@@ -37,7 +37,7 @@ public abstract class TestsBase
         aggregator.Setup(x => x.GetBestEmissionsDataAsync(It.IsAny<CarbonAwareParameters>()))
             .Callback((CarbonAwareParameters parameters) =>
             {
-                parameters.SetRequiredProperties(PropertyName.MultipleLocations);
+                parameters.Validator.SetRequiredProperties(PropertyName.MultipleLocations);
                 parameters.Validate();
             })
             .ReturnsAsync(data);
@@ -54,7 +54,7 @@ public abstract class TestsBase
         aggregator.Setup(x => x.GetCurrentForecastDataAsync(It.IsAny<CarbonAwareParameters>()))
             .Callback((CarbonAwareParameters parameters) =>
             {
-                parameters.SetRequiredProperties(PropertyName.MultipleLocations);
+                parameters.Validator.SetRequiredProperties(PropertyName.MultipleLocations);
                 parameters.Validate();
             })
             .ReturnsAsync(forecasts);
@@ -67,7 +67,7 @@ public abstract class TestsBase
         aggregator.Setup(x => x.CalculateAverageCarbonIntensityAsync(It.IsAny<CarbonAwareParameters>()))
             .Callback((CarbonAwareParameters parameters) =>
             {
-                parameters.SetRequiredProperties(PropertyName.SingleLocation, PropertyName.Start, PropertyName.End);
+                parameters.Validator.SetRequiredProperties(PropertyName.SingleLocation, PropertyName.Start, PropertyName.End);
                 parameters.Validate();
             })
             .ReturnsAsync(data);
