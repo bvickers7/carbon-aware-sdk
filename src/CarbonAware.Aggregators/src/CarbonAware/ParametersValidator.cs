@@ -6,14 +6,14 @@ public class ParametersValidator
 {
     public enum ValidationName { StartBeforeEnd, StartRequiredIfEnd };
 
-    private readonly CarbonAwareParameters _parameters;
+    private readonly List<PropertyName> _requiredProperties;
 
-    private readonly List<Validator> _validations;
+    private readonly List<Func<CarbonAwareParameters, Validator>> _validations;
 
-    public ParametersValidator(CarbonAwareParameters _parameters)
+    public ParametersValidator()
     {
-        this._parameters = _parameters;
-        _validations = new List<Validator>();
+        _requiredProperties = new List<PropertyName>();
+        _validations = new List<Func<CarbonAwareParameters, Validator>>();
     }
 
     /// <summary>
@@ -22,10 +22,7 @@ public class ParametersValidator
     /// <param name="requiredProperties"></param>
     public void SetRequiredProperties(params PropertyName[] requiredProperties)
     {
-        foreach (var propertyName in requiredProperties)
-        {
-            _parameters._props[propertyName].IsRequired = true;
-        }
+        _requiredProperties.AddRange(requiredProperties);
     }
 
     /// <summary>
@@ -39,17 +36,17 @@ public class ParametersValidator
             switch (validationName)
             {
                 case ValidationName.StartBeforeEnd:
-                    _validations.Add(StartBeforeEnd());
+                    _validations.Add(StartBeforeEnd);
                     break;
                 case ValidationName.StartRequiredIfEnd:
-                    _validations.Add(StartRequiredIfEnd());
+                    _validations.Add(StartRequiredIfEnd);
                     break;
             }
         }
     }
 
     /// <summary>
-    /// Validates the properties and relationships between properties. Any validation errors found are packaged into an
+    /// Takes in a CarbonAwarePArameters object and validates the properties and relationships between properties. Any validation errors found are packaged into an
     /// ArgumentException and thrown. If there are no errors, simply returns void. 
     /// </summary>
     /// <remarks> Validation includes two checks.
@@ -57,13 +54,14 @@ public class ParametersValidator
     ///  - Check that specified validations (like start < end) are true
     ///  If any validation errors are found during property validation, with throw without validating property relationships
     /// </remarks>
-    public void Validate()
+    public void Validate(CarbonAwareParameters parameters)
     {
         // Validate Properties
         var errors = new Dictionary<string, List<string>>();
         foreach (var propertyName in CarbonAwareParameters.GetPropertyNames())
         {
-            var property = _parameters._props[propertyName];
+            var property = parameters._props[propertyName];
+            if (_requiredProperties.Contains(propertyName)) property.IsRequired = true;
             if (!property.IsValid) { errors.AppendValue(property.DisplayName, $"{property.DisplayName} is not set"); }
         }
 
@@ -73,7 +71,8 @@ public class ParametersValidator
         // Check validations
         foreach (var validation in _validations)
         {
-            if (!validation.IsValid()) errors.AppendValue(validation.ErrorKey!, validation.ErrorMessage!);
+            var validator = validation(parameters);
+            if (!validator.IsValid()) errors.AppendValue(validator.ErrorKey!, validator.ErrorMessage!);
         }
 
         // Assert no relationship validation errors. Throws if any errors.
@@ -89,7 +88,7 @@ public class ParametersValidator
     {
         if (errors.Keys.Count > 0)
         {
-            ArgumentException error = new ArgumentException("Invalid _parameters");
+            var error = new ArgumentException("Invalid _parameters");
             foreach (KeyValuePair<string, List<string>> message in errors)
             {
                 error.Data[message.Key] = message.Value.ToArray();
@@ -135,23 +134,23 @@ public class ParametersValidator
         }
     }
 
-    private Validator StartBeforeEnd()
+    private Validator StartBeforeEnd(CarbonAwareParameters parameters)
     {
         return new Validator(
             ValidationName.StartBeforeEnd,
-            () => _parameters.Start < _parameters.End,
-            _parameters._props[PropertyName.Start].DisplayName,
-            $"{_parameters._props[PropertyName.Start].DisplayName} must be before {_parameters._props[PropertyName.End].DisplayName}"
+            () => parameters.Start < parameters.End,
+            parameters._props[PropertyName.Start].DisplayName,
+            $"{parameters._props[PropertyName.Start].DisplayName} must be before {parameters._props[PropertyName.End].DisplayName}"
         );
     }
 
-    private Validator StartRequiredIfEnd()
+    private Validator StartRequiredIfEnd(CarbonAwareParameters parameters)
     {
         return new Validator(
             ValidationName.StartRequiredIfEnd,
-            () => !(_parameters._props[PropertyName.End].IsSet && !_parameters._props[PropertyName.Start].IsSet),
-            _parameters._props[PropertyName.Start].DisplayName,
-            $"{_parameters._props[PropertyName.Start].DisplayName} must be defined if {_parameters._props[PropertyName.End].DisplayName} is defined"
+            () => !(parameters._props[PropertyName.End].IsSet && !parameters._props[PropertyName.Start].IsSet),
+            parameters._props[PropertyName.Start].DisplayName,
+            $"{parameters._props[PropertyName.Start].DisplayName} must be defined if {parameters._props[PropertyName.End].DisplayName} is defined"
         );
     }
 }

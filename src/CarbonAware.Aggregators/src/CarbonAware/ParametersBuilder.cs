@@ -8,40 +8,37 @@ namespace CarbonAware.Aggregators.CarbonAware;
 /// </summary>
 public class ParametersBuilder
 {
+    public enum ParameterType { EmissionsParameters, CurrentForecastParameters, ForecastParameters, CarbonIntensityParameters }
     private readonly CarbonAwareParametersBaseDTO baseParameters;
     private readonly ParameterType parameterType;
 
-    public ParametersBuilder(ParameterType type)
+    public ParametersBuilder(ParameterType type, CarbonAwareParametersBaseDTO? parameters = null)
     {
-        baseParameters = new CarbonAwareParametersBaseDTO();
-        parameterType = type;
-    }
-
-    public ParametersBuilder(CarbonAwareParametersBaseDTO parameters, ParameterType type)
-    {
-        baseParameters = parameters;
+        baseParameters = parameters ?? new CarbonAwareParametersBaseDTO();
         parameterType = type;
     }
 
     public CarbonAwareParameters Build()
     {
-        CarbonAwareParameters parameters = baseParameters;
-        parameters.SetupValidator(parameterType);
-        parameters.Validate();
-        return parameters;
+        ParametersValidator validator = SetupValidator(parameterType);
+        validator.Validate(baseParameters);
+        return baseParameters;
     }
 
-    public void AddStartTime(DateTimeOffset start)
+    public ParametersBuilder AddStartTime(DateTimeOffset start)
     {
         baseParameters.Start = start;
+        return this;
     }
-    public void AddEndTime(DateTimeOffset end)
+    public ParametersBuilder AddEndTime(DateTimeOffset end)
     {
         baseParameters.End = end;
+        return this;
     }
-    public void AddLocation(string location)
+    public ParametersBuilder AddLocation(string location)
     {
         AddLocations(new string[] { location });
+        return this;
     }
 
     public void AddLocations(string[] locations)
@@ -72,5 +69,39 @@ public class ParametersBuilder
     public void AddDuration(int duration)
     {
         baseParameters.Duration = duration;
+    }
+
+    public static ParametersValidator SetupValidator(ParameterType type)
+    {
+        var validator = new ParametersValidator();
+        validator.SetValidations(ValidationName.StartBeforeEnd);
+        switch (type)
+        {
+            case ParameterType.EmissionsParameters:
+                {
+                    validator.SetRequiredProperties(PropertyName.MultipleLocations);
+                    validator.SetValidations(ValidationName.StartRequiredIfEnd, ValidationName.StartBeforeEnd);
+                    break;
+                }
+            case ParameterType.CurrentForecastParameters:
+                {
+                    validator.SetRequiredProperties(PropertyName.MultipleLocations);
+                    validator.SetValidations(ValidationName.StartBeforeEnd);
+                    break;
+                }
+            case ParameterType.ForecastParameters:
+                {
+                    validator.SetRequiredProperties(PropertyName.SingleLocation, PropertyName.Requested);
+                    validator.SetValidations(ValidationName.StartBeforeEnd);
+                    break;
+                }
+            case ParameterType.CarbonIntensityParameters:
+                {
+                    validator.SetRequiredProperties(PropertyName.SingleLocation, PropertyName.Start, PropertyName.End);
+                    validator.SetValidations(ValidationName.StartBeforeEnd);
+                    break;
+                }
+        }
+        return validator;
     }
 }

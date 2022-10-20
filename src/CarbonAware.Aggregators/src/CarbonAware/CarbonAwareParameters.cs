@@ -100,53 +100,11 @@ public class CarbonAwareParameters
     }
 
     internal Dictionary<PropertyName, Property> _props { get; init; }
-    public ParametersValidator Validator { get; init; }
-
-    public enum ParameterType { EmissionsParameters, CurrentForecastParameters, ForecastParameters, CarbonIntensityParameters }
 
     public CarbonAwareParameters(Dictionary<string, string>? displayNameMap = null)
     {
         _props = InitProperties();
         if (displayNameMap is not null) { _props.UpdateDisplayNames(displayNameMap); }
-        Validator = new ParametersValidator(this);
-    }
-
-    public void SetupValidator(ParameterType type)
-    {
-        var validator = this.Validator;
-        validator.SetValidations(ValidationName.StartBeforeEnd);
-        switch (type)
-        {
-            case ParameterType.EmissionsParameters:
-                {
-                    validator.SetRequiredProperties(PropertyName.MultipleLocations);
-                    validator.SetValidations(ValidationName.StartRequiredIfEnd, ValidationName.StartBeforeEnd);
-                    break;
-                }
-            case ParameterType.CurrentForecastParameters:
-                {
-                    validator.SetRequiredProperties(PropertyName.MultipleLocations);
-                    validator.SetValidations(ValidationName.StartBeforeEnd);
-                    break;
-                }
-            case ParameterType.ForecastParameters:
-                {
-                    validator.SetRequiredProperties(PropertyName.SingleLocation, PropertyName.Requested);
-                    validator.SetValidations(ValidationName.StartBeforeEnd);
-                    break;
-                }
-            case ParameterType.CarbonIntensityParameters:
-                {
-                    validator.SetRequiredProperties(PropertyName.SingleLocation, PropertyName.Start, PropertyName.End);
-                    validator.SetValidations(ValidationName.StartBeforeEnd);
-                    break;
-                }
-        }
-    }
-
-    public void Validate()
-    {
-        Validator.Validate();
     }
 
     /// <summary>
