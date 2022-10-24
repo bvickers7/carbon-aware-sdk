@@ -34,9 +34,11 @@ public class CarbonAwareCarbonAwareParametersTests
     {
         // Arrange
         var parameters = new CarbonAwareParameters();
+        var validator = new ParametersValidator();
 
         // Act
-        parameters.Validator.SetRequiredProperties(Array.Empty<PropertyName>());
+        validator.SetRequiredProperties(Array.Empty<PropertyName>());
+        validator.Validate(parameters);
 
         // Assert
         foreach (var propertyName in CarbonAwareParameters.GetPropertyNames())
@@ -50,9 +52,16 @@ public class CarbonAwareCarbonAwareParametersTests
     {
         // Arrange
         var parameters = new CarbonAwareParameters();
+        var validator = new ParametersValidator();
 
         // Act
-        parameters.Validator.SetRequiredProperties(PropertyName.MultipleLocations, PropertyName.Start);
+        validator.SetRequiredProperties(PropertyName.MultipleLocations, PropertyName.Start);
+        try
+        {
+            validator.Validate(parameters);
+        }
+        catch { }
+
 
         // Assert
         Assert.IsTrue(parameters._props[PropertyName.MultipleLocations].IsRequired);
@@ -67,6 +76,7 @@ public class CarbonAwareCarbonAwareParametersTests
     {
         // Arrange
         var parameters = new CarbonAwareParameters();
+        var validator = new ParametersValidator();
 
         var propertyNames = new List<PropertyName>();
         if (propertyName1 != null) propertyNames.Add((PropertyName)propertyName1);
@@ -74,10 +84,10 @@ public class CarbonAwareCarbonAwareParametersTests
         foreach (var name in propertyNames)
         {
             parameters._props[name].IsSet = true;
-            parameters.Validator.SetRequiredProperties(name);
+            validator.SetRequiredProperties(name);
         }
         // Act & Assert
-        parameters.Validate();
+        validator.Validate(parameters);
     }
 
     [Test]
@@ -85,10 +95,11 @@ public class CarbonAwareCarbonAwareParametersTests
     {
         // Arrange
         var parameters = new CarbonAwareParameters();
-        parameters.Validator.SetRequiredProperties(PropertyName.Start);
+        var validator = new ParametersValidator()
+            .SetRequiredProperties(PropertyName.Start);
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => parameters.Validate());
+        Assert.Throws<ArgumentException>(() => validator.Validate(parameters));
     }
 
     [Test]
@@ -99,11 +110,11 @@ public class CarbonAwareCarbonAwareParametersTests
         {
             MultipleLocations = Enumerable.Empty<Location>(),
         };
-
-        parameters.Validator.SetRequiredProperties(PropertyName.MultipleLocations);
+        var validator = new ParametersValidator()
+            .SetRequiredProperties(PropertyName.MultipleLocations);
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => parameters.Validate());
+        Assert.Throws<ArgumentException>(() => validator.Validate(parameters));
     }
 
     [Test]
@@ -115,11 +126,12 @@ public class CarbonAwareCarbonAwareParametersTests
             Start = new DateTimeOffset(2022, 1, 5, 12, 0, 0, TimeSpan.Zero),
             End = new DateTimeOffset(2022, 1, 1, 12, 0, 0, TimeSpan.Zero),
         };
-        parameters.Validator.SetRequiredProperties(new PropertyName[] { PropertyName.Start, PropertyName.End });
-        parameters.Validator.SetValidations(ValidationName.StartBeforeEnd);
+        var validator = new ParametersValidator()
+            .SetRequiredProperties(new PropertyName[] { PropertyName.Start, PropertyName.End })
+            .SetValidations(ValidationName.StartBeforeEnd);
 
-        // Assert
-        Assert.Throws<ArgumentException>(() => parameters.Validate());
+        // Act/Assert
+        Assert.Throws<ArgumentException>(() => validator.Validate(parameters));
     }
 
     [Test]
@@ -130,11 +142,12 @@ public class CarbonAwareCarbonAwareParametersTests
         {
             Start = new DateTimeOffset(2022, 1, 1, 12, 0, 0, TimeSpan.Zero),
             End = new DateTimeOffset(2022, 1, 5, 12, 0, 0, TimeSpan.Zero),
-        };
-        parameters.Validator.SetRequiredProperties(new PropertyName[] { PropertyName.Start, PropertyName.End });
+        }; 
+        var validator = new ParametersValidator()
+            .SetRequiredProperties(new PropertyName[] { PropertyName.Start, PropertyName.End });
 
         // Act
-        parameters.Validate();
+        validator.Validate(parameters);
 
         // Shouldn't throw an error
     }

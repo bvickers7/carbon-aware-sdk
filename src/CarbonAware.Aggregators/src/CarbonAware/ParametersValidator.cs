@@ -1,10 +1,15 @@
+using static CarbonAware.Aggregators.CarbonAware.ParametersBuilder;
 using PropertyName = CarbonAware.Aggregators.CarbonAware.CarbonAwareParameters.PropertyName;
 
 namespace CarbonAware.Aggregators.CarbonAware;
 
 public class ParametersValidator
 {
-    public enum ValidationName { StartBeforeEnd, StartRequiredIfEnd };
+    public enum ValidationName { 
+        // Start < End
+        StartBeforeEnd, 
+        // if End, End && Start
+        StartRequiredIfEnd };
 
     private readonly List<PropertyName> _requiredProperties;
 
@@ -20,16 +25,17 @@ public class ParametersValidator
     /// Accepts any PropertyNames as arguments and sets the associated property as required for validation.
     /// </summary>
     /// <param name="requiredProperties"></param>
-    public void SetRequiredProperties(params PropertyName[] requiredProperties)
+    public ParametersValidator SetRequiredProperties(params PropertyName[] requiredProperties)
     {
         _requiredProperties.AddRange(requiredProperties);
+        return this;
     }
 
     /// <summary>
     /// Accepts any ValidationName as arguments and sets the associated validation to check.
     /// </summary>
     /// <param name="validationName"></param>
-    public void SetValidations(params ValidationName[] validationNames)
+    public ParametersValidator SetValidations(params ValidationName[] validationNames)
     {
         foreach (var validationName in validationNames)
         {
@@ -43,6 +49,7 @@ public class ParametersValidator
                     break;
             }
         }
+        return this;
     }
 
     /// <summary>
@@ -75,7 +82,7 @@ public class ParametersValidator
             if (!validator.IsValid()) errors.AppendValue(validator.ErrorKey!, validator.ErrorMessage!);
         }
 
-        // Assert no relationship validation errors. Throws if any errors.
+        // Assert no validation errors. Throws if any errors.
         AssertNoErrors(errors);
     }
 
@@ -153,6 +160,22 @@ public class ParametersValidator
             $"{parameters._props[PropertyName.Start].DisplayName} must be defined if {parameters._props[PropertyName.End].DisplayName} is defined"
         );
     }
+
+    public static ParametersValidator EmissionsValidator() => new ParametersValidator()
+        .SetRequiredProperties(PropertyName.MultipleLocations)
+        .SetValidations(ValidationName.StartRequiredIfEnd, ValidationName.StartBeforeEnd);
+
+    public static ParametersValidator CarbonIntensityValidator() => new ParametersValidator()
+        .SetRequiredProperties(PropertyName.SingleLocation, PropertyName.Start, PropertyName.End)
+        .SetValidations(ValidationName.StartBeforeEnd);
+
+    public static ParametersValidator CurrentForecastValidator() => new ParametersValidator()
+        .SetRequiredProperties(PropertyName.MultipleLocations)
+        .SetValidations(ValidationName.StartBeforeEnd);
+
+    public static ParametersValidator ForecastValidator() => new ParametersValidator()
+        .SetRequiredProperties(PropertyName.SingleLocation, PropertyName.Requested)
+        .SetValidations(ValidationName.StartBeforeEnd);
 }
 
 

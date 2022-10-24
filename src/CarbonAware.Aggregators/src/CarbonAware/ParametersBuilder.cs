@@ -20,8 +20,8 @@ public class ParametersBuilder
 
     public CarbonAwareParameters Build()
     {
-        ParametersValidator validator = SetupValidator(parameterType);
-        validator.Validate(baseParameters);
+        GetValidator(parameterType)
+            .Validate(baseParameters);
         return baseParameters;
     }
 
@@ -41,7 +41,7 @@ public class ParametersBuilder
         return this;
     }
 
-    public void AddLocations(string[] locations)
+    public ParametersBuilder AddLocations(string[] locations)
     {
         switch (parameterType)
         {
@@ -64,44 +64,24 @@ public class ParametersBuilder
                     break;
                 }
         }
+        return this;
     }
 
-    public void AddDuration(int duration)
+    public ParametersBuilder AddDuration(int duration)
     {
         baseParameters.Duration = duration;
+        return this;
     }
 
-    public static ParametersValidator SetupValidator(ParameterType type)
+    public static ParametersValidator GetValidator(ParameterType type)
     {
-        var validator = new ParametersValidator();
-        validator.SetValidations(ValidationName.StartBeforeEnd);
-        switch (type)
+        return type switch
         {
-            case ParameterType.EmissionsParameters:
-                {
-                    validator.SetRequiredProperties(PropertyName.MultipleLocations);
-                    validator.SetValidations(ValidationName.StartRequiredIfEnd, ValidationName.StartBeforeEnd);
-                    break;
-                }
-            case ParameterType.CurrentForecastParameters:
-                {
-                    validator.SetRequiredProperties(PropertyName.MultipleLocations);
-                    validator.SetValidations(ValidationName.StartBeforeEnd);
-                    break;
-                }
-            case ParameterType.ForecastParameters:
-                {
-                    validator.SetRequiredProperties(PropertyName.SingleLocation, PropertyName.Requested);
-                    validator.SetValidations(ValidationName.StartBeforeEnd);
-                    break;
-                }
-            case ParameterType.CarbonIntensityParameters:
-                {
-                    validator.SetRequiredProperties(PropertyName.SingleLocation, PropertyName.Start, PropertyName.End);
-                    validator.SetValidations(ValidationName.StartBeforeEnd);
-                    break;
-                }
-        }
-        return validator;
+            ParameterType.EmissionsParameters => EmissionsValidator(),
+            ParameterType.CurrentForecastParameters => CurrentForecastValidator(),
+            ParameterType.ForecastParameters => ForecastValidator(),
+            ParameterType.CarbonIntensityParameters => CarbonIntensityValidator(),
+            _ => new ParametersValidator(),
+        };
     }
 }

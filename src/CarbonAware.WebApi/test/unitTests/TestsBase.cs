@@ -24,8 +24,9 @@ public abstract class TestsBase
         aggregator.Setup(x => x.GetEmissionsDataAsync(It.IsAny<CarbonAwareParameters>()))
             .Callback((CarbonAwareParameters parameters) =>
             {
-                parameters.Validator.SetRequiredProperties(PropertyName.MultipleLocations);
-                parameters.Validate();
+                new ParametersValidator()
+                    .SetRequiredProperties(PropertyName.MultipleLocations)
+                    .Validate(parameters);
             })
             .ReturnsAsync(data);
         return aggregator;
@@ -37,8 +38,9 @@ public abstract class TestsBase
         aggregator.Setup(x => x.GetBestEmissionsDataAsync(It.IsAny<CarbonAwareParameters>()))
             .Callback((CarbonAwareParameters parameters) =>
             {
-                parameters.Validator.SetRequiredProperties(PropertyName.MultipleLocations);
-                parameters.Validate();
+                new ParametersValidator()
+                    .SetRequiredProperties(PropertyName.MultipleLocations)
+                    .Validate(parameters);
             })
             .ReturnsAsync(data);
         return aggregator;
@@ -54,8 +56,9 @@ public abstract class TestsBase
         aggregator.Setup(x => x.GetCurrentForecastDataAsync(It.IsAny<CarbonAwareParameters>()))
             .Callback((CarbonAwareParameters parameters) =>
             {
-                parameters.Validator.SetRequiredProperties(PropertyName.MultipleLocations);
-                parameters.Validate();
+                new ParametersValidator()
+                    .SetRequiredProperties(PropertyName.MultipleLocations)
+                    .Validate(parameters);
             })
             .ReturnsAsync(forecasts);
         return aggregator;
@@ -67,8 +70,9 @@ public abstract class TestsBase
         aggregator.Setup(x => x.CalculateAverageCarbonIntensityAsync(It.IsAny<CarbonAwareParameters>()))
             .Callback((CarbonAwareParameters parameters) =>
             {
-                parameters.Validator.SetRequiredProperties(PropertyName.SingleLocation, PropertyName.Start, PropertyName.End);
-                parameters.Validate();
+                new ParametersValidator()
+                    .SetRequiredProperties(PropertyName.SingleLocation, PropertyName.Start, PropertyName.End)
+                    .Validate(parameters);
             })
             .ReturnsAsync(data);
 
