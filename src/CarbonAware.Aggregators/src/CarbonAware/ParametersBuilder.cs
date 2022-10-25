@@ -8,14 +8,14 @@ namespace CarbonAware.Aggregators.CarbonAware;
 /// </summary>
 public class ParametersBuilder
 {
-    public enum ParameterType { EmissionsParameters, CurrentForecastParameters, ForecastParameters, CarbonIntensityParameters }
+    public enum ParameterType { GenericParameters, EmissionsParameters, CurrentForecastParameters, ForecastParameters, CarbonIntensityParameters }
     private readonly CarbonAwareParametersBaseDTO baseParameters;
     private readonly ParameterType parameterType;
 
-    public ParametersBuilder(ParameterType type, CarbonAwareParametersBaseDTO? parameters = null)
+    public ParametersBuilder(ParameterType? type = null, CarbonAwareParametersBaseDTO? parameters = null)
     {
         baseParameters = parameters ?? new CarbonAwareParametersBaseDTO();
-        parameterType = type;
+        parameterType = type ?? ParameterType.GenericParameters;
     }
 
     public CarbonAwareParameters Build()
@@ -47,6 +47,7 @@ public class ParametersBuilder
         {
             case ParameterType.EmissionsParameters:
             case ParameterType.CurrentForecastParameters:
+            case ParameterType.GenericParameters:
                 {
                     if (locations.Any())
                     {
@@ -81,6 +82,7 @@ public class ParametersBuilder
             ParameterType.CurrentForecastParameters => CurrentForecastValidator(),
             ParameterType.ForecastParameters => ForecastValidator(),
             ParameterType.CarbonIntensityParameters => CarbonIntensityValidator(),
+            ParameterType.GenericParameters => new ParametersValidator(),
             _ => new ParametersValidator(),
         };
     }
