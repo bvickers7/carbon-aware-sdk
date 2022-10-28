@@ -35,4 +35,8 @@ Use the flag `--average` to get the optimal emissions for a given location and t
 ## Forecast Command
 Use `emissions-forecasts` command to get forecast data. The option `requested-at` can be used to toggle between histrorical forecast and current forecast. If `requested-at` is not specified, the current forecast is retrieved and if specified, the historical forecast is retrieved.
 
-![](https://github.com/microsoft/carbon-aware-sdk/blob/demo-gifs/docs/cli-demo/emissions-forecast.gif)
+### Current Forecast
+![](https://github.com/microsoft/carbon-aware-sdk/blob/demo-gifs/docs/cli-demo/emissions-forecasts.gif)
+
+### Historical Forecast
+![](https://github.com/microsoft/carbon-aware-sdk/blob/demo-gifs/docs/cli-demo/emissions-forecasts-historical.gif)
