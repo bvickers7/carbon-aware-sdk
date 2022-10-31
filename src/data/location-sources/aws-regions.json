@@ -1,0 +1,107 @@
+[
+    {
+      "Latitude": "38.13",
+      "Longitude": "-78.45",
+      "RegionName": "us-east-1"
+    },
+    {
+      "RegionName": "us-east-2",
+      "Latitude": "39.96",
+      "Longitude": "-83"
+    },
+    {
+      "RegionName": "eu-north-1",
+      "Latitude": "59.25",
+      "Longitude": "17.81"
+    },
+    {
+      "RegionName": "eu-south-1",
+      "Latitude": "45.43",
+      "Longitude": "9.29"
+    },
+    {
+      "RegionName": "us-west-1",
+      "Latitude": "37.35",
+      "Longitude": "-121.96"
+    },
+    {
+      "RegionName": "us-west-2",
+      "Latitude": "46.15",
+      "Longitude": "-123.88"
+    },
+    {
+      "RegionName": "eu-west-1",
+      "Latitude": "53",
+      "Longitude": "-8"
+    },
+    {
+      "RegionName": "eu-west-2",
+      "Latitude": "51",
+      "Longitude": "-0.1"
+    },
+    {
+      "RegionName": "eu-west-3",
+      "Latitude": "48.86",
+      "Longitude": "2.35"
+    },
+    {
+      "RegionName": "eu-central-1",
+      "Latitude": "50",
+      "Longitude": "8"
+    },
+    {
+      "RegionName": "sa-east-1",
+      "Latitude": "-23.34",
+      "Longitude": "-46.38"
+    },
+    {
+      "RegionName": "ap-southeast-1",
+      "Latitude": "1.37",
+      "Longitude": "103.8"
+    },
+    {
+      "RegionName": "ap-southeast-2",
+      "Latitude": "-33.86",
+      "Longitude": "151.2"
+    },
+    {
+      "RegionName": "ap-northeast-1",
+      "Latitude": "35.41",
+      "Longitude": "139.42"
+    },
+    {
+      "RegionName": "ap-northeast-2",
+      "Latitude": "37.56",
+      "Longitude": "126.98"
+    },
+    {
+      "RegionName": "ap-northeast-3",
+      "Latitude": "34.69",
+      "Longitude": "135.49"
+    },
+    {
+      "RegionName": "ap-south-1",
+      "Latitude": "19.08",
+      "Longitude": "72.88"
+    },
+    {
+      "RegionName": "ca-central-1",
+      "Latitude": "45.5",
+      "Longitude": "-73.6"
+    },
+    {
+      "RegionName": "ap-east-1",
+      "Latitude": "22.27",
+      "Longitude": "114.16"
+    },
+    {
+      "RegionName": "me-south-1",
+      "Latitude": "26.10",
+      "Longitude": "50.46"
+    },
+    {
+      "RegionName": "af-south-1",
+      "Latitude": "-33.93",
+      "Longitude": "18.42"
+    }
+]
